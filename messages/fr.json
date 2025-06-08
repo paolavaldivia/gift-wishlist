@@ -3,6 +3,9 @@
 	"title": "Liste de naissance - Bébé en route !",
 	"heading": "Un petit miracle arrive chez Céline & Paola !",
 	"subheading": "Prévue pour août 2025, notre petite merveille se prépare à pointer le bout de son nez 👶✨",
+	"navigation": {
+		"language": "Langue"
+	},
 	"giftList": {
 		"title": "Liste de cadeaux",
 		"description": "Choisissez un cadeau pour accueillir notre futur petit explorateur",

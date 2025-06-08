@@ -3,6 +3,9 @@
 	"title": "Baby Registry - Little miracle on the way!",
 	"heading": "A little miracle is coming to Céline & Paola!",
 	"subheading": "Expected August 2025, our little wonder is getting ready to make their grand entrance 👶✨",
+	"navigation": {
+		"language": "Language"
+	},
 	"giftList": {
 		"title": "Gift Registry",
 		"description": "Choose a gift to welcome our future little explorer",

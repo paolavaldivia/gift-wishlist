@@ -3,6 +3,9 @@
 	"title": "Lista de nacimiento - ¡Bebé en camino!",
 	"heading": "¡Un pequeño milagro llega a casa de Céline y Paola!",
 	"subheading": "Previsto para agosto de 2025, nuestra pequeña maravilla se prepara para asomar su naricita 👶✨",
+	"navigation": {
+		"language": "Idioma"
+	},
 	"giftList": {
 		"title": "Lista de regalos",
 		"description": "Elige un regalo para dar la bienvenida a nuestro futuro pequeño explorador",
