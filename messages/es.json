@@ -2,7 +2,7 @@
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"title": "Lista de nacimiento - ¡Pequeño alborotador en camino!",
 	"heading": "El bebecite de Céline y Paola",
-	"subheading": "¡Se acerca el gran día de la mudanza! Nuestr@ pequeñ@ inquilin@ pronto será desalojad@ del lujoso estudio de mamá (con servicio de habitación 24/7, calefacción central y placenta todo incluido). ¡Ayúdanos a dar la bienvenida a est@ pequeñ@ inquilin@ al mundo exterior eligiendo un regalo o contribuyendo a nuestro fondo para bebecite! 👶🏠💰",
+	"subheading": "¡Se acerca el gran día de la mudanza! Nuestr@ pequeñ@ inquilin@ pronto será desalojad@ del lujoso estudio de mamá (con servicio de habitación 24/7, calefacción central y placenta todo incluido). ¡Ayúdanos a dar la bienvenida a est@ pequeñ@ inquilin@ al mundo exterior eligiendo un regalo o contribuyendo a nuestro fondo para bebecite!",
 	"navigation": {
 		"language": "Idioma"
 	},
@@ -18,7 +18,7 @@
 	},
 	"donation": {
 		"title": "Fondo para bebecite",
-		"description": "Ya nos conoces, seguramente olvidamos comprar un millón de cosas. ¡Ayúdanos a mantenernos fuera de la cárcel contribuyendo a nuestro fondo para el bebé! 🍼👶",
+		"description": "Ya nos conoces, seguramente olvidamos comprar un millón de cosas. ¡Ayúdanos a mantenernos fuera de la cárcel contribuyendo a nuestro fondo para el bebé!",
 		"button": "Contribuir al fondo",
 		"amount": "Cantidad recaudada"
 	}

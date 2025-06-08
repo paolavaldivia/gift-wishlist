@@ -2,7 +2,7 @@
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "title": "Baby Registry - Little troublemaker on the way!",
   "heading": "Céline & Paola's baby registry",
-  "subheading": "The big moving day is coming! Our little squatter is soon being evicted from mom's luxury studio (with 24/7 room service, central heating, and all-inclusive placenta comfort). Help us welcome this tiny tenant to the outside world by choosing a gift or contributing to our baby fund! 👶🏠💰",
+  "subheading": "The big moving day is coming! Our little squatter is soon being evicted from mom's luxury studio (with 24/7 room service, central heating, and all-inclusive placenta comfort). Help us welcome this tiny tenant to the outside world by choosing a gift or contributing to our baby fund!",
   "navigation": {
     "language": "Language"
   },
@@ -18,7 +18,7 @@
   },
   "donation": {
     "title": "Baby Fund",
-    "description": "You know us, surely we forgot to buy a million things. Help us stay out of jail by contributing to our baby fund! 🍼👶",
+    "description": "You know us, surely we forgot to buy a million things. Help us stay out of jail by contributing to our baby fund!",
     "button": "Contribute to the fund",
     "amount": "Amount collected"
   }

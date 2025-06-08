@@ -147,6 +147,7 @@
     }
 
     .hero-image {
+				max-width: 400px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -273,7 +274,7 @@
         }
 
         .hero-image {
-						max-width: 80%;
+						max-width: min(300px, 80%);
             min-height: 200px;
             margin-top: var(--spacing-lg);
             margin-bottom: var(--spacing-md);

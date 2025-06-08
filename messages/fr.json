@@ -2,7 +2,7 @@
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"title": "Liste de naissance - Petit fauteur de troubles en route !",
 	"heading": "Le petit bebé de Céline & Paola",
-	"subheading": "Le grand jour du déménagement approche ! Notre petit squatteur sera bientôt expulsé du studio de luxe de maman (avec service d'étage 24h/24, chauffage central et confort placentaire tout inclus). Aidez-nous à accueillir ce petit locataire dans le monde extérieur en choisissant un cadeau ou en contribuant à notre cagnotte bébé ! 👶🏠💰",
+	"subheading": "Le grand jour du déménagement approche ! Notre petit squatteur sera bientôt expulsé du studio de luxe de maman (avec service d'étage 24h/24, chauffage central et confort placentaire tout inclus). Aidez-nous à accueillir ce petit locataire dans le monde extérieur en choisissant un cadeau ou en contribuant à notre cagnotte bébé !",
 	"navigation": {
 		"language": "Langue"
 	},
@@ -18,7 +18,7 @@
 	},
 	"donation": {
 		"title": "Cagnotte de naissance",
-		"description": "Vous nous connaissez, on a sûrement oublié d'acheter un million de choses. Aidez-nous à rester hors de prison en contribuant à notre cagnotte bébé ! 🍼👶",
+		"description": "Vous nous connaissez, on a sûrement oublié d'acheter un million de choses. Aidez-nous à rester hors de prison en contribuant à notre cagnotte bébé !",
 		"button": "Participer à la cagnotte",
 		"amount": "Montant collecté"
 	}
