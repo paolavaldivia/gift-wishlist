@@ -1,25 +1,25 @@
 {
-	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"title": "Baby Registry - Little miracle on the way!",
-	"heading": "A little miracle is coming to Céline & Paola!",
-	"subheading": "Expected August 2025, our little wonder is getting ready to make their grand entrance 👶✨",
-	"navigation": {
-		"language": "Language"
-	},
-	"giftList": {
-		"title": "Gift Registry",
-		"description": "Choose a gift to welcome our future little explorer",
-		"approximatePrice": "Approximate price",
-		"buyAt": "Where to buy",
-		"taken": "Already reserved by",
-		"reserve": "I'll get this gift",
-		"alreadyTaken": "Oops, already taken!",
-		"thankYou": "Thank you {name}! ❤️"
-	},
-	"donation": {
-		"title": "Baby Fund",
-		"description": "The big moving day is here! 📦 Our little squatter is finally leaving mom's fully-equipped studio (central heating, 24/7 room service, and all-inclusive placenta comfort!). We're setting up a fund to help them get equipped in their new world... where strangely, nothing is free! Thanks for contributing to this new adventure! 🍼👶",
-		"button": "Contribute to the fund",
-		"amount": "Amount collected"
-	}
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "title": "Baby Registry - Little troublemaker on the way!",
+  "heading": "Céline & Paola's baby registry",
+  "subheading": "The big moving day is coming! Our little squatter is soon being evicted from mom's luxury studio (with 24/7 room service, central heating, and all-inclusive placenta comfort). Help us welcome this tiny tenant to the outside world by choosing a gift or contributing to our baby fund! 👶🏠💰",
+  "navigation": {
+    "language": "Language"
+  },
+  "giftList": {
+    "title": "Gift Registry",
+    "description": "Help us prepare for the big move by choosing a gift for our future little troublemaker!",
+    "approximatePrice": "Approximate price",
+    "buyAt": "Where to buy",
+    "taken": "Already reserved by",
+    "reserve": "I'll get this gift",
+    "alreadyTaken": "Oops, already taken!",
+    "thankYou": "Thank you {name}! ❤️"
+  },
+  "donation": {
+    "title": "Baby Fund",
+    "description": "You know us, surely we forgot to buy a million things. Help us stay out of jail by contributing to our baby fund! 🍼👶",
+    "button": "Contribute to the fund",
+    "amount": "Amount collected"
+  }
 }
