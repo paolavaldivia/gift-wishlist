@@ -178,3 +178,8 @@
         transform: rotate(180deg);
     }
 }
+
+/* Clip path effects */
+.splat-clip {
+    clip-path: url(#irregular-circle-clip);
+}

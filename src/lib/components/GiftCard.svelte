@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Gift } from '$lib/types/gift';
 	import * as m from '$lib/paraglide/messages';
+	import WaveClipPath from './WaveClipPath.svelte';
 
 	let { gift, onReserve }: { gift: Gift; onReserve?: (giftId: string) => void } = $props();
 
@@ -18,9 +19,10 @@
 	}
 </script>
 
+<WaveClipPath />
 <article class="gift-card card" class:taken={gift.isTaken}>
 	<div class="image-container">
-		<img src={gift.imagePath} alt={gift.name} />
+		<img src={gift.imagePath} alt={gift.name} class="splat-clip" />
 		{#if gift.isTaken}
 			<div class="taken-overlay">
 				<span class="taken-text">{m['giftList.alreadyTaken']()}</span>
@@ -82,12 +84,20 @@
         height: 200px;
         overflow: hidden;
         background: var(--color-gray-50);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .image-container img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform var(--transition-base);
+    }
+
+    .image-container:hover img {
+        transform: scale(1.05);
     }
 
     .taken-overlay {
