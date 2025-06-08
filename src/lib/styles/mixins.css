@@ -154,3 +154,27 @@
         display: none;
     }
 }
+
+.wave-top {
+    clip-path: url(#wave-clip);
+    position: relative;
+    overflow: hidden;
+}
+
+.wave-bottom {
+    clip-path: url(#wave-clip);
+    transform: rotate(180deg);
+    position: relative;
+    overflow: hidden;
+}
+
+@media (max-width: 768px) {
+    .wave-top {
+        clip-path: url(#wave-clip-mobile);
+    }
+
+    .wave-bottom {
+        clip-path: url(#wave-clip-mobile);
+        transform: rotate(180deg);
+    }
+}

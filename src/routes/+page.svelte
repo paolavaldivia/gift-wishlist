@@ -2,6 +2,7 @@
 	import * as m from '$lib/paraglide/messages';
 	import GiftCard from '$lib/components/GiftCard.svelte';
 	import DonationSection from '$lib/components/DonationSection.svelte';
+	import WaveClipPath from '$lib/components/WaveClipPath.svelte';
 	import { mockGifts } from '$lib/data/mockGifts';
 	import type { Gift } from '$lib/types/gift';
 
@@ -26,17 +27,9 @@
 		alert('La fonction de donation sera bientôt disponible! / Donation feature coming soon! / ¡Función de donación próximamente!');
 	}
 </script>
-<header class="hero">
-	<svg width="0" height="0" style="position: absolute">
-		<defs>
-			<clipPath id="wave-clip" clipPathUnits="objectBoundingBox">
-				<path d="M0,0 L1,0 L1,0.95 C0.85,0.9 0.7,1 0.5,0.95 C0.3,0.9 0.15,1 0,0.95 Z" />
-			</clipPath>
-			<clipPath id="wave-clip-mobile" clipPathUnits="objectBoundingBox">
-				<path d="M0,0 L1,0 L1,0.98 C0.85,0.95 0.7,1 0.5,0.97 C0.3,0.95 0.15,1 0,0.98 Z" />
-			</clipPath>
-		</defs>
-	</svg>
+
+<WaveClipPath />
+<header class="hero wave-top">
 	<div class="hero-content-container">
 	<div class="hero-content">
 		<h1>{m.heading()}</h1>
@@ -89,7 +82,6 @@
         align-items: center;
         position: relative;
         overflow: hidden;
-        clip-path: url(#wave-clip);
     }
 
     .hero::before {
@@ -206,7 +198,6 @@
             padding: var(--spacing-lg) var(--spacing-md) var(--spacing-2xl);
             grid-template-columns: 1fr;
             text-align: center;
-            clip-path: url(#wave-clip-mobile);
         }
 
         .hero-content {

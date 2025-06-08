@@ -4,6 +4,7 @@
 	import * as m from '$lib/paraglide/messages';
 	import Footer from '$lib/components/Footer.svelte';
 	import '../app.css';
+	import '$lib/styles/mixins.css';
 
 	function isActive(locale: string) {
 		const localeOptions = locales.map((locale) => `/${locale}`);
