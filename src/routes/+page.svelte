@@ -122,6 +122,7 @@
         margin-bottom: var(--spacing-md);
         font-weight: var(--font-weight-bold);
         line-height: var(--line-height-tight);
+				text-align: center;
     }
 
     .subtitle {

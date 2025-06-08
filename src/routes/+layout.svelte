@@ -52,6 +52,7 @@
 
 <svelte:head>
 	<title>{m.title()}</title>
+	<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Comfortaa:wght@400;500;600;700&display=swap" rel="stylesheet">
 </svelte:head>
 
 <style>

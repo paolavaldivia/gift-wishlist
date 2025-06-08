@@ -13,7 +13,7 @@
     --color-accent-light: #e3eff0;
 
     --color-success: #9ED9B5; /* Pastel green */
-    --color-warning: #FFD8A8; /* Soft peach */
+  --color-warning: #FFD8A8; /* Soft peach */
     --color-danger: #FFABAB; /* Light coral */
     --color-danger-dark: #FF9494;
 
@@ -31,7 +31,8 @@
     --color-gray-900: #2A2E29;
 
     /* Typography */
-    --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-family-base: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-family-heading: 'Comfortaa', cursive, sans-serif;
     --font-size-xs: 0.75rem;
     --font-size-sm: 0.85rem;
     --font-size-base: 1rem;
@@ -100,7 +101,7 @@
 
 body {
     margin: 0;
-    font-family: var(--font-family-base);
+    font-family: var(--font-family-base), sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background: var(--color-gray-50);
@@ -110,6 +111,7 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
     margin: 0;
+    font-family: var(--font-family-heading), sans-serif;
     font-weight: var(--font-weight-semibold);
     line-height: var(--line-height-tight);
     color: var(--color-gray-800);
