@@ -29,24 +29,33 @@
 </script>
 
 <WaveClipPath />
-<header class="hero wave-top">
-	<div class="hero-content-container">
-	<div class="hero-content">
-		<h1>{m.heading()}</h1>
-		<p class="subtitle">{m.subheading()}</p>
-	</div>
-	</div>
+<header class="hero-container">
+	<div class="hero wave-top">
+		<div class="hero-content-container">
+			<div class="hero-content">
+				<h1>{m.heading()}</h1>
+				<p class="subtitle">{m.subheading()}</p>
+			</div>
+		</div>
 
-	<!-- Placeholder for the belly photo -->
-	<div class="hero-image">
-		<div class="image-placeholder">
-			<span>Photo du bidou à venir 📸</span>
+		<div class="pride-squares">
+			<div class="pride-square" style="background-color: var(--color-pride-red)"></div>
+			<div class="pride-square" style="background-color: var(--color-pride-orange)"></div>
+			<div class="pride-square" style="background-color: var(--color-pride-yellow)"></div>
+			<div class="pride-square" style="background-color: var(--color-pride-green)"></div>
+			<div class="pride-square" style="background-color: var(--color-pride-blue)"></div>
+			<div class="pride-square" style="background-color: var(--color-pride-purple)"></div>
+			<div class="pride-square" style="background-color: var(--color-pride-pink)"></div>
+		</div>
+
+		<!-- Placeholder for the belly photo -->
+		<div class="hero-image">
+			<img src="https://picsum.photos/600/400?random=2"  alt="Céline's Belly"/>
 		</div>
 	</div>
 </header>
 
 <div class="container">
-
 
 	<section class="gift-section">
 		<h2>{m['giftList.title']()}</h2>
@@ -60,7 +69,6 @@
 	</section>
 
 	<DonationSection
-		currentAmount={150}
 		onDonate={handleDonate}
 	/>
 </div>
@@ -70,6 +78,10 @@
         max-width: var(--container-max-width);
         margin: 0 auto;
         padding: var(--spacing-xl);
+    }
+
+    .hero-container {
+        filter: drop-shadow(var(--shadow-sm));
     }
 
     .hero {
@@ -82,6 +94,7 @@
         align-items: center;
         position: relative;
         overflow: hidden;
+        box-shadow: var(--shadow-lg);
     }
 
     .hero::before {
@@ -105,15 +118,16 @@
     }
 
     .hero-content-container {
-				width: 100%;
-				display: flex;
-				flex-direction: column;
-				justify-content: center;
-				align-items: center;
-		}
+        width: 100%;
+        padding-left: var(--spacing-lg);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
 
     .hero-content {
-				max-width: 400px;
+        max-width: 400px;
     }
 
     .hero h1 {
@@ -122,7 +136,7 @@
         margin-bottom: var(--spacing-md);
         font-weight: var(--font-weight-bold);
         line-height: var(--line-height-tight);
-				text-align: center;
+        text-align: center;
     }
 
     .subtitle {
@@ -133,33 +147,42 @@
     }
 
     .hero-image {
-        width: 100%;
-        height: 100%;
-        min-height: 300px;
         display: flex;
         align-items: center;
         justify-content: center;
-    }
-
-    .image-placeholder {
-        width: 100%;
-        height: 100%;
-        background: rgba(255, 255, 255, 0.5);
-        border-radius: var(--radius-lg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 2px dashed var(--color-secondary);
-        color: var(--color-gray-500);
-        font-size: var(--font-size-lg);
+        position: relative;
+        padding: var(--spacing-xs);
     }
 
     .hero-image img {
         width: 100%;
-        height: 100%;
+        height: auto;
         object-fit: cover;
         border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-lg);
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-image::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg,
+            var(--color-pride-red),
+            var(--color-pride-orange),
+            var(--color-pride-yellow),
+            var(--color-pride-green),
+            var(--color-pride-blue),
+            var(--color-pride-purple),
+            var(--color-pride-pink)
+        );
+        border-radius: calc(var(--radius-lg) + 5px);
+        z-index: 0;
+        filter: blur(2px);
+        opacity: 0.6;
     }
 
     .gift-section {
@@ -190,6 +213,37 @@
         margin-bottom: var(--spacing-3xl);
     }
 
+    .pride-squares {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        gap: var(--spacing-sm);
+        display: flex;
+        flex-direction: column;
+        z-index: 1;
+    }
+
+    .pride-square {
+        width: 20px;
+        height: 20px;
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-sm);
+        animation: var(--transition-slow) tilt;
+    }
+
+    @keyframes tilt {
+        0% {
+            transform: rotate(0deg);
+        }
+        50% {
+            transform: scale(1.2) rotate(10deg);
+        }
+        100% {
+            transform: scale(1) rotate(0deg);
+        }
+    }
+
     @media (max-width: 768px) {
         .container {
             padding: var(--spacing-md);
@@ -199,10 +253,15 @@
             padding: var(--spacing-lg) var(--spacing-md) var(--spacing-2xl);
             grid-template-columns: 1fr;
             text-align: center;
+            display: flex;
+            flex-direction: column;
         }
 
         .hero-content {
+            max-width: 80%;
             text-align: center;
+            padding-left: 0;
+            order: 1;
         }
 
         .hero h1 {
@@ -214,9 +273,16 @@
         }
 
         .hero-image {
+						max-width: 80%;
             min-height: 200px;
             margin-top: var(--spacing-lg);
             margin-bottom: var(--spacing-md);
+            height: auto;
+            order: 3;
+        }
+        
+        .hero-image::before {
+            filter: blur(5px);
         }
 
         .gift-section h2 {
@@ -224,8 +290,24 @@
         }
 
         .gift-grid {
-            grid-template-columns: 1fr;
-            gap: var(--spacing-lg);
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .pride-squares {
+            position: static;
+            flex-direction: row;
+            transform: none;
+            justify-content: center;
+            margin: var(--spacing-md) 0;
+            padding: 0;
+            z-index: 1;
+            order: 2;
+        }
+
+        .pride-square {
+            width: 20px;
+            height: 20px;
         }
     }
 </style>

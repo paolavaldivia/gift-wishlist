@@ -30,6 +30,15 @@
     --color-gray-800: #3E443D;
     --color-gray-900: #2A2E29;
 
+    /* Pride Colors - Pastel versions */
+    --color-pride-red: #FF9AA2;      /* Pastel red */
+    --color-pride-orange: #FFB347;   /* Pastel orange */
+    --color-pride-yellow: #FDFD96;   /* Pastel yellow */
+    --color-pride-green: #A8E6CF;    /* Pastel green */
+    --color-pride-blue: #B5C0D0;     /* Pastel blue */
+    --color-pride-purple: #CDB4DB;   /* Pastel purple */
+    --color-pride-pink: #FFC8DD;     /* Pastel pink */
+
     /* Typography */
     --font-family-base: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-family-heading: 'Comfortaa', cursive, sans-serif;
@@ -271,7 +280,7 @@ a:hover {
 }
 
 .gradient-subtle {
-    background: linear-gradient(135deg, var(--color-gray-50) 0%, #c3cfe2 100%);
+    background: linear-gradient(135deg, var(--color-secondary-light) 0%, var(--color-accent-light) 100%);
 }
 
 /* Animations */

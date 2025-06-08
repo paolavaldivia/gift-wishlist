@@ -126,9 +126,14 @@
 
     @media (max-width: 768px) {
         .language-select {
-            padding: 0.4rem 2rem 0.4rem 0.8rem;
+            padding: 0.4rem 2rem 0.4rem 1.8rem; /* Increase left padding */
             font-size: 0.85rem;
             min-width: 100px;
+        }
+
+        .globe-icon {
+            font-size: 0.9rem; /* Make the globe icon smaller on mobile */
+            left: 0.6rem; /* Position it slightly more to the right */
         }
     }
 </style>
