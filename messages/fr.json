@@ -1,6 +1,22 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"title": "Souhaits de cadeaux pour bébé",
-	"heading": "Céline et Paola",
-	"subheading": "Inscrivez-vous pour offrir un cadeau à notre bébé"
+	"title": "Liste de naissance - Bébé en route !",
+	"heading": "Un petit miracle arrive chez Céline & Paola !",
+	"subheading": "Prévue pour août 2025, notre petite merveille se prépare à pointer le bout de son nez 👶✨",
+	"giftList": {
+		"title": "Liste de cadeaux",
+		"description": "Choisissez un cadeau pour accueillir notre futur petit explorateur",
+		"approximatePrice": "Prix indicatif",
+		"buyAt": "Où l'acheter",
+		"taken": "Déjà réservé par",
+		"reserve": "Je réserve ce cadeau",
+		"alreadyTaken": "Oups, déjà pris !",
+		"thankYou": "Merci {name} ! ❤️"
+	},
+	"donation": {
+		"title": "Cagnotte de naissance",
+		"description": "Ça y est, c'est l'heure du grand déménagement ! 📦 Notre petit squatteur quitte enfin le studio tout équipé de maman (chauffage central, room service 24h/24, et placenta tout confort inclus !). On organise une petite cagnotte pour l'aider à s'équiper dans son nouveau monde... où bizarrement, rien n'est gratuit ! Merci de contribuer à cette nouvelle aventure ! 🍼👶",
+		"button": "Participer à la cagnotte",
+		"amount": "Montant collecté"
+	}
 }

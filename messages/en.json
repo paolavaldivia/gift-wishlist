@@ -1,7 +1,22 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hello, {name} from en!",
-	"title": "Baby Gift Wishlist",
-	"heading": "Céline and Paola",
-	"subheading": "Register to offer our baby a gift"
+	"title": "Baby Registry - Little miracle on the way!",
+	"heading": "A little miracle is coming to Céline & Paola!",
+	"subheading": "Expected August 2025, our little wonder is getting ready to make their grand entrance 👶✨",
+	"giftList": {
+		"title": "Gift Registry",
+		"description": "Choose a gift to welcome our future little explorer",
+		"approximatePrice": "Approximate price",
+		"buyAt": "Where to buy",
+		"taken": "Already reserved by",
+		"reserve": "I'll get this gift",
+		"alreadyTaken": "Oops, already taken!",
+		"thankYou": "Thank you {name}! ❤️"
+	},
+	"donation": {
+		"title": "Baby Fund",
+		"description": "The big moving day is here! 📦 Our little squatter is finally leaving mom's fully-equipped studio (central heating, 24/7 room service, and all-inclusive placenta comfort!). We're setting up a fund to help them get equipped in their new world... where strangely, nothing is free! Thanks for contributing to this new adventure! 🍼👶",
+		"button": "Contribute to the fund",
+		"amount": "Amount collected"
+	}
 }

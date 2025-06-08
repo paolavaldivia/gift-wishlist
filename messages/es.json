@@ -1,6 +1,22 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"title": "Lista de regalo para bebecite",
-	"heading": "Céline y Paola",
-	"subheading": "Regístrate para ofrecerle un regalo a nuestro bebecite"
+	"title": "Lista de nacimiento - ¡Bebé en camino!",
+	"heading": "¡Un pequeño milagro llega a casa de Céline y Paola!",
+	"subheading": "Previsto para agosto de 2025, nuestra pequeña maravilla se prepara para asomar su naricita 👶✨",
+	"giftList": {
+		"title": "Lista de regalos",
+		"description": "Elige un regalo para dar la bienvenida a nuestro futuro pequeño explorador",
+		"approximatePrice": "Precio aproximado",
+		"buyAt": "Dónde comprar",
+		"taken": "Ya reservado por",
+		"reserve": "Reservo este regalo",
+		"alreadyTaken": "¡Ups, ya está reservado!",
+		"thankYou": "¡Gracias {name}! ❤️"
+	},
+	"donation": {
+		"title": "Fondo para el bebé",
+		"description": "¡Ya llegó la hora de la gran mudanza! 📦 Nuestro pequeño inquilino finalmente deja el estudio totalmente equipado de mamá (calefacción central, servicio de habitación 24/7, ¡y placenta todo incluido!). Organizamos un fondo para ayudarle a equiparse en su nuevo mundo... donde extrañamente, ¡nada es gratis! ¡Gracias por contribuir a esta nueva aventura! 🍼👶",
+		"button": "Contribuir al fondo",
+		"amount": "Cantidad recaudada"
+	}
 }
