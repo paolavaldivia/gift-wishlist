@@ -18,7 +18,7 @@
 	}
 </script>
 
-<article class="gift-card" class:taken={gift.isTaken}>
+<article class="gift-card card" class:taken={gift.isTaken}>
 	<div class="image-container">
 		<img src={gift.imagePath} alt={gift.name} />
 		{#if gift.isTaken}
@@ -55,7 +55,7 @@
 			</div>
 		{:else}
 			<button
-				class="reserve-button"
+				class="btn btn-primary reserve-button"
 				onclick={handleReserve}
 				disabled={gift.isTaken}
 			>
@@ -67,19 +67,9 @@
 
 <style>
     .gift-card {
-        background: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
         height: 100%;
         display: flex;
         flex-direction: column;
-    }
-
-    .gift-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
     }
 
     .gift-card.taken {
@@ -91,7 +81,7 @@
         width: 100%;
         height: 200px;
         overflow: hidden;
-        background: #f8f9fa;
+        background: var(--color-gray-50);
     }
 
     .image-container img {
@@ -113,104 +103,86 @@
     }
 
     .taken-text {
-        color: white;
-        font-size: 1.2rem;
-        font-weight: bold;
-        background: #e74c3c;
-        padding: 8px 16px;
-        border-radius: 4px;
+        color: var(--color-white);
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-bold);
+        background: var(--color-danger);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius-sm);
         transform: rotate(-15deg);
     }
 
     .content {
-        padding: 1.5rem;
+        padding: var(--spacing-lg);
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: var(--spacing-sm);
     }
 
     h3 {
         margin: 0;
-        font-size: 1.25rem;
-        color: #2c3e50;
+        font-size: var(--font-size-xl);
+        color: var(--color-gray-800);
     }
 
     .description {
-        color: #7f8c8d;
-        font-size: 0.9rem;
-        line-height: 1.5;
+        color: var(--color-gray-500);
+        font-size: var(--font-size-sm);
+        line-height: var(--line-height-normal);
         margin: 0;
     }
 
     .price, .purchase-links, .taken-by {
-        font-size: 0.9rem;
+        font-size: var(--font-size-sm);
     }
 
     .label {
-        color: #7f8c8d;
-        font-weight: 500;
+        color: var(--color-gray-500);
+        font-weight: var(--font-weight-medium);
     }
 
     .value {
-        color: #27ae60;
-        font-weight: bold;
-        font-size: 1.1rem;
+        color: var(--color-success);
+        font-weight: var(--font-weight-bold);
+        font-size: var(--font-size-lg);
     }
 
     .links {
         display: flex;
-        gap: 0.5rem;
+        gap: var(--spacing-sm);
         flex-wrap: wrap;
-        margin-top: 0.25rem;
+        margin-top: var(--spacing-xs);
     }
 
     .purchase-link {
-        color: #3498db;
+        color: var(--color-primary);
         text-decoration: none;
-        padding: 4px 8px;
-        background: #ecf0f1;
-        border-radius: 4px;
-        font-size: 0.85rem;
-        transition: background-color 0.2s ease;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        background: var(--color-gray-100);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-sm);
+        transition: background-color var(--transition-fast);
     }
 
     .purchase-link:hover {
-        background: #d5dbdb;
+        background: var(--color-gray-200);
         text-decoration: underline;
     }
 
     .taken-by {
         margin-top: auto;
-        padding-top: 0.5rem;
-        border-top: 1px solid #ecf0f1;
+        padding-top: var(--spacing-sm);
+        border-top: 1px solid var(--color-gray-100);
     }
 
     .taken-by .name {
-        color: #e74c3c;
-        font-weight: bold;
+        color: var(--color-danger);
+        font-weight: var(--font-weight-bold);
     }
 
     .reserve-button {
         margin-top: auto;
-        background: #3498db;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
         width: 100%;
-    }
-
-    .reserve-button:hover:not(:disabled) {
-        background: #2980b9;
-    }
-
-    .reserve-button:disabled {
-        background: #bdc3c7;
-        cursor: not-allowed;
     }
 </style>

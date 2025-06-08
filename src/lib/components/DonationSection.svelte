@@ -20,7 +20,7 @@
 	}
 </script>
 
-<section class="donation-section">
+<section class="donation-section gradient-primary">
 	<div class="donation-content">
 		<h2>{m['donation.title']()}</h2>
 		<p class="description">{m['donation.description']()}</p>
@@ -30,7 +30,7 @@
 			<span class="amount">{formatPrice(currentAmount, currency)}</span>
 		</div>
 
-		<button class="donate-button" onclick={onDonate}>
+		<button class="btn btn-secondary donate-button" onclick={onDonate}>
 			{m['donation.button']()}
 		</button>
 	</div>
@@ -48,72 +48,60 @@
 
 <style>
     .donation-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 16px;
-        padding: 3rem;
-        margin: 3rem 0;
+        color: var(--color-white);
+        border-radius: var(--radius-xl);
+        padding: var(--spacing-2xl);
+        margin: var(--spacing-2xl) 0;
         display: grid;
         grid-template-columns: 1fr auto;
-        gap: 3rem;
+        gap: var(--spacing-2xl);
         align-items: center;
         position: relative;
         overflow: hidden;
     }
 
     .donation-content {
-        z-index: 1;
+        z-index: var(--z-base);
     }
 
     h2 {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-        font-weight: 700;
+        font-size: var(--font-size-3xl);
+        margin-bottom: var(--spacing-md);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-white);
     }
 
     .description {
-        font-size: 1.1rem;
-        line-height: 1.8;
-        margin-bottom: 2rem;
+        font-size: var(--font-size-lg);
+        line-height: var(--line-height-loose);
+        margin-bottom: var(--spacing-xl);
         opacity: 0.95;
     }
 
     .amount-display {
         background: rgba(255, 255, 255, 0.2);
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--radius-md);
         display: inline-block;
-        margin-bottom: 2rem;
+        margin-bottom: var(--spacing-xl);
         backdrop-filter: blur(10px);
     }
 
     .amount-display .label {
-        font-size: 0.9rem;
+        font-size: var(--font-size-sm);
         opacity: 0.9;
     }
 
     .amount-display .amount {
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin-left: 0.5rem;
+        font-size: var(--font-size-2xl);
+        font-weight: var(--font-weight-bold);
+        margin-left: var(--spacing-sm);
     }
 
     .donate-button {
-        background: white;
-        color: #764ba2;
-        border: none;
-        padding: 16px 32px;
-        border-radius: 50px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .donate-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        font-size: var(--font-size-lg);
+        padding: var(--spacing-md) var(--spacing-2xl);
+        border-radius: var(--radius-full);
     }
 
     .illustration {
@@ -149,26 +137,10 @@
     .item:nth-child(3) { bottom: 20%; left: 15%; }
     .item:nth-child(4) { bottom: 10%; right: 20%; }
 
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-20px); }
-    }
-
-    @keyframes float {
-        0%, 100% {
-            transform: translateY(0) rotate(0deg);
-            opacity: 0.8;
-        }
-        50% {
-            transform: translateY(-30px) rotate(180deg);
-            opacity: 1;
-        }
-    }
-
     @media (max-width: 768px) {
         .donation-section {
             grid-template-columns: 1fr;
-            padding: 2rem;
+            padding: var(--spacing-xl);
             text-align: center;
         }
 
@@ -177,11 +149,11 @@
         }
 
         h2 {
-            font-size: 1.5rem;
+            font-size: var(--font-size-2xl);
         }
 
         .description {
-            font-size: 1rem;
+            font-size: var(--font-size-base);
         }
     }
 </style>

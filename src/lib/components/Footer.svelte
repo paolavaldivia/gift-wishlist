@@ -15,32 +15,32 @@
 
 <style>
     .footer {
-        background: #2c3e50;
-        color: white;
-        padding: 2rem 0;
-        margin-top: 4rem;
+        background: var(--color-primary-dark);
+        color: var(--color-white);
+        padding: var(--spacing-xl) 0;
+        margin-top: var(--spacing-3xl);
         text-align: center;
     }
 
     .container {
-        max-width: 1200px;
+        max-width: var(--container-max-width);
         margin: 0 auto;
-        padding: 0 2rem;
+        padding: 0 var(--spacing-xl);
     }
 
     .made-with {
-        font-size: 1.1rem;
-        margin-bottom: 0.5rem;
+        font-size: var(--font-size-lg);
+        margin-bottom: var(--spacing-sm);
     }
 
     .heart {
-        color: #e74c3c;
-        animation: heartbeat 1.5s ease-in-out infinite;
+        color: var(--color-danger);
+        animation: heartbeat var(--transition-base) infinite;
         display: inline-block;
     }
 
     .copyright {
-        font-size: 0.9rem;
+        font-size: var(--font-size-sm);
         opacity: 0.8;
         margin: 0;
     }

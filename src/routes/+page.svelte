@@ -26,22 +26,24 @@
 		alert('La fonction de donation sera bientôt disponible! / Donation feature coming soon! / ¡Función de donación próximamente!');
 	}
 </script>
+<header class="hero">
+	<div class="hero-content-container">
+	<div class="hero-content">
+		<h1>{m.heading()}</h1>
+		<p class="subtitle">{m.subheading()}</p>
+	</div>
+	</div>
+
+	<!-- Placeholder for the belly photo -->
+	<div class="hero-image">
+		<div class="image-placeholder">
+			<span>Photo du bidou à venir 📸</span>
+		</div>
+	</div>
+</header>
 
 <div class="container">
-	<header class="hero">
-		<div class="hero-content">
-			<h1>{m.heading()}</h1>
-			<p class="subtitle">{m.subheading()}</p>
-		</div>
 
-		<!-- Placeholder for the belly photo -->
-		<div class="hero-image">
-			<!-- You can replace this with the actual image later -->
-			<div class="image-placeholder">
-				<span>Photo du bidou à venir 📸</span>
-			</div>
-		</div>
-	</header>
 
 	<section class="gift-section">
 		<h2>{m['giftList.title']()}</h2>
@@ -62,39 +64,46 @@
 
 <style>
     .container {
-        max-width: 1200px;
+        max-width: var(--container-max-width);
         margin: 0 auto;
-        padding: 2rem;
+        padding: var(--spacing-xl);
     }
 
     .hero {
-        margin-bottom: 4rem;
-        padding: 3rem;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        border-radius: 16px;
+        margin-bottom: var(--spacing-3xl);
+        padding: var(--spacing-2xl);
+        background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-gray-300) 100%);
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 3rem;
+        gap: var(--spacing-2xl);
         align-items: center;
     }
 
+		.hero-content-container {
+				width: 100%;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+		}
+
     .hero-content {
-        text-align: left;
+				max-width: 400px;
     }
 
     .hero h1 {
-        font-size: 2.5rem;
-        color: #2c3e50;
-        margin-bottom: 1rem;
-        font-weight: 700;
-        line-height: 1.2;
+        font-size: var(--font-size-4xl);
+        color: var(--color-gray-800);
+        margin-bottom: var(--spacing-md);
+        font-weight: var(--font-weight-bold);
+        line-height: var(--line-height-tight);
     }
 
     .subtitle {
-        font-size: 1.2rem;
-        color: #7f8c8d;
+        font-size: var(--font-size-lg);
+        color: var(--color-gray-600);
         margin: 0;
-        line-height: 1.6;
+        line-height: var(--line-height-relaxed);
     }
 
     .hero-image {
@@ -110,40 +119,39 @@
         width: 100%;
         height: 100%;
         background: rgba(255, 255, 255, 0.5);
-        border-radius: 12px;
+        border-radius: var(--radius-lg);
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 2px dashed #c3cfe2;
-        color: #7f8c8d;
-        font-size: 1.1rem;
+        border: 2px dashed var(--color-secondary);
+        color: var(--color-gray-500);
+        font-size: var(--font-size-lg);
     }
 
-    /* When you add the actual image, use this style */
     .hero-image img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
     }
 
     .gift-section {
-        margin-bottom: 4rem;
+        margin-bottom: var(--spacing-3xl);
     }
 
     .gift-section h2 {
-        font-size: 2.5rem;
+        font-size: var(--font-size-3xl);
         text-align: center;
-        color: #2c3e50;
-        margin-bottom: 1rem;
+        color: var(--color-gray-800);
+        margin-bottom: var(--spacing-md);
     }
 
     .section-description {
         text-align: center;
-        color: #7f8c8d;
-        font-size: 1.1rem;
-        margin-bottom: 3rem;
+        color: var(--color-gray-600);
+        font-size: var(--font-size-lg);
+        margin-bottom: var(--spacing-2xl);
         max-width: 600px;
         margin-left: auto;
         margin-right: auto;
@@ -152,17 +160,17 @@
     .gift-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 2rem;
-        margin-bottom: 4rem;
+        gap: var(--grid-gap);
+        margin-bottom: var(--spacing-3xl);
     }
 
     @media (max-width: 768px) {
         .container {
-            padding: 1rem;
+            padding: var(--spacing-md);
         }
 
         .hero {
-            padding: 2rem 1rem;
+            padding: var(--spacing-lg) var(--spacing-md);
             grid-template-columns: 1fr;
             text-align: center;
         }
@@ -172,25 +180,25 @@
         }
 
         .hero h1 {
-            font-size: 2rem;
+            font-size: var(--font-size-3xl);
         }
 
         .subtitle {
-            font-size: 1.1rem;
+            font-size: var(--font-size-base);
         }
 
         .hero-image {
             min-height: 200px;
-            margin-top: 2rem;
+            margin-top: var(--spacing-lg);
         }
 
         .gift-section h2 {
-            font-size: 2rem;
+            font-size: var(--font-size-2xl);
         }
 
         .gift-grid {
             grid-template-columns: 1fr;
-            gap: 1.5rem;
+            gap: var(--spacing-lg);
         }
     }
 </style>
