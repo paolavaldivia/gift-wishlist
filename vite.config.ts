@@ -3,16 +3,18 @@ import { svelteTesting } from '@testing-library/svelte/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
 	plugins: [
 		sveltekit(),
 		paraglideVitePlugin({
 			project: './project.inlang',
-			outdir: './src/lib/paraglide'
+			outdir: './src/lib/paraglide',
+			disableAsyncLocalStorage: true,
+			strategy: ['url', 'preferredLanguage', 'cookie', 'baseLocale']
 		})
 	],
 	test: {
-		workspace: [
+		projects: [
 			{
 				extends: './vite.config.ts',
 				plugins: [svelteTesting()],
@@ -35,5 +37,8 @@ export default defineConfig({
 				}
 			}
 		]
+	},
+	resolve: {
+		conditions: mode === 'test' ? ['browser'] : []
 	}
-});
+}));

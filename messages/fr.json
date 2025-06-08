@@ -1,4 +1,6 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hello, {name} from fr!"
+	"title": "Souhaits de cadeaux pour bébé",
+	"heading": "Céline et Paola",
+	"subheading": "Inscrivez-vous pour offrir un cadeau à notre bébé"
 }
