@@ -15,11 +15,16 @@ async function getDrizzleConfig() {
 			type: 'd1'
 		};
 	} else {
-		const { default: devConfig } = await import('../../../../drizzle-dev.config');
-		return {
-			type: 'sqlite',
-			credentials: devConfig.dbCredentials
-		};
+		try {
+			const { default: devConfig } = await import('../../../../drizzle-dev.config');
+			return {
+				type: 'sqlite',
+				credentials: devConfig.dbCredentials
+			};
+		} catch (err) {
+			console.error('Failed to load drizzle-dev.config:', err);
+			throw err;
+		}
 	}
 }
 

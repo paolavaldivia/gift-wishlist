@@ -3,6 +3,7 @@ import { generateId, giftsQueries } from '$lib/server/db/queries';
 import type { RequestHandler } from './$types';
 import type { Gift } from '$lib/types/gift';
 import { handleApiError } from '$lib/server/utils';
+import { currencies } from '$lib/server/db/schema';
 
 export const GET: RequestHandler = async ({ locals, url }) => {
 	if (!locals.db) {
@@ -37,6 +38,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	try {
 		const giftData = (await request.json()) as Omit<Gift, 'id'>;
+
+		if (!currencies.includes(giftData.currency)) {
+			throw error(400, 'Invalid currency');
+		}
 
 		// Add ID and timestamps
 		const newGift = {

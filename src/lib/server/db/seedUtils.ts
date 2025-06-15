@@ -1,15 +1,18 @@
-import { createD1Client } from '$lib/server/db/config';
-import type { RequestHandler } from '@sveltejs/kit';
 import { reset, seed } from 'drizzle-seed';
-import { bigGifts, contributors, currencies, gifts } from '$lib/server/db/schema';
-
-export const prerender = false;
+import { currencies, gifts } from './schema';
 
 type DatabaseInstance = App.Locals['db'];
 
-async function seedDatabase(db: DatabaseInstance) {
-	await reset(db, { bigGifts, contributors, gifts });
-	await seed(db, { bigGifts, contributors, gifts }).refine((f) => ({
+export async function seedDatabase(db: DatabaseInstance) {
+	await reset(db, { gifts });
+	await seed(
+		db,
+		{ gifts },
+		{
+			batchSize: 2,
+			count: 5
+		}
+	).refine((f) => ({
 		bigGifts: {
 			// currency valid only
 			columns: {
@@ -52,23 +55,8 @@ async function seedDatabase(db: DatabaseInstance) {
 					]
 				}),
 				currency: f.valuesFromArray({ values: currencies as unknown as string[] }),
-				approximatePrice: f.int({ minValue: 1, maxValue: 100 })
+				approximatePrice: f.int({ minValue: 10, maxValue: 100 })
 			}
 		}
 	}));
 }
-
-export const GET: RequestHandler = async ({ platform }) => {
-	if (!platform?.env?.DB) {
-		return new Response('Database not available', { status: 500 });
-	}
-
-	const db = createD1Client(platform.env.DB);
-	try {
-		await seedDatabase(db);
-		return new Response('Database seeded successfully!', { status: 200 });
-	} catch (err) {
-		console.error('Failed to seed database:', err);
-		return new Response(`Failed to seed database: ${err}`, { status: 500 });
-	}
-};

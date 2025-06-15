@@ -19,14 +19,20 @@ const handleDb: Handle = async ({ event, resolve }) => {
 		return resolve(event);
 	}
 
-	// Check if we're in the Cloudflare environment
-	if (process.env.NODE_ENV === 'production' && event.platform?.env?.DB) {
-		// For production/preview with D1
-		event.locals.db = getDb(event.platform.env);
-	} else {
-		// For local development, you might want to use a different approach
-		// Since we can't use D1 bindings locally
-		event.locals.db = await createDbClient();
+	try {
+		// Check if we're in the Cloudflare environment with D1 binding
+		if (process.env.NODE_ENV === 'development') {
+			event.locals.db = await createDbClient();
+		} else if (event.platform?.env?.DB) {
+			event.locals.db = getDb(event.platform.env);
+		} else {
+			// Production without D1 binding - this shouldn't happen
+			console.error('No database binding available in production environment');
+			// Don't set event.locals.db - let the endpoints handle the missing database
+		}
+	} catch (error) {
+		console.error('Failed to initialize database connection:', error);
+		// Don't set event.locals.db - let the endpoints handle the missing database
 	}
 
 	return resolve(event);
