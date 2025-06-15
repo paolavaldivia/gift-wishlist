@@ -33,7 +33,7 @@ export async function createDbClient() {
 
 	if (config.type === 'sqlite') {
 		// For local development
-		const sqlite = new Database(config.credentials.url);
+		const sqlite = new Database(config.credentials?.url);
 		return drizzleSqlite(sqlite, { schema });
 	} else {
 		// For production D1 - this won't work in seeding context

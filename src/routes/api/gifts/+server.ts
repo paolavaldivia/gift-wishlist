@@ -31,6 +31,11 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 	}
 };
 
+// Replace the currencies.includes check with a type guard
+function isValidCurrency(value: string): value is (typeof currencies)[number] {
+	return currencies.includes(value as any);
+}
+
 export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.db) {
 		throw error(500, 'Database not available');
@@ -39,7 +44,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
 		const giftData = (await request.json()) as Omit<Gift, 'id'>;
 
-		if (!currencies.includes(giftData.currency)) {
+		if (!isValidCurrency(giftData.currency)) {
 			throw error(400, 'Invalid currency');
 		}
 
@@ -47,6 +52,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const newGift = {
 			id: generateId(),
 			...giftData,
+			currency: giftData.currency as (typeof currencies)[number],
 			isTaken: false,
 			takenBy: null,
 			createdAt: new Date(),

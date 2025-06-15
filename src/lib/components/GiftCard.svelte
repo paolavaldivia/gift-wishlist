@@ -20,7 +20,7 @@
 </script>
 
 <WaveClipPath />
-<article class="gift-card card" class:taken={gift.isTaken}>
+<article class="gift-card card" class:taken={gift.isTaken} data-testid="gift-card">
 	<div class="image-container">
 		<img src={gift.imagePath} alt={gift.name} class="splat-clip" />
 		{#if gift.isTaken}

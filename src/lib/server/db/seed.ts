@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
-import { bigGifts, contributors, gifts } from './schema';
 import Database from 'better-sqlite3';
+import * as schema from './schema';
 import { seedDatabase } from '$lib/server/db/seedUtils';
 
 async function main() {
@@ -19,7 +19,7 @@ async function main() {
 
 	// Create local SQLite connection
 	const sqlite = new Database(process.env.DATABASE_URL);
-	const db = drizzle(sqlite, { schema: { bigGifts, contributors, gifts } });
+	const db = drizzle(sqlite, { schema });
 
 	await seedDatabase(db);
 
