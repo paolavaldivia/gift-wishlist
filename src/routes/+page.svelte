@@ -1,28 +1,112 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages';
+	import { fly } from 'svelte/transition';
 	import GiftCard from '$lib/components/GiftCard.svelte';
 	import DonationSection from '$lib/components/DonationSection.svelte';
 	import WaveClipPath from '$lib/components/WaveClipPath.svelte';
+	import ReservationModal from '$lib/components/ReservationModal.svelte';
 	import type { Gift } from '$lib/types/gift';
 	import type { PageProps } from '../../.svelte-kit/types/src/routes/$types';
 
 	let { data }: PageProps = $props();
 	let gifts = $state<Gift[]>(data.gifts as Gift[]);
 
-	// let gifts = $state<Gift[]>([...mockGifts]);
+	// Modal state
+	let isModalOpen = $state(false);
+	let selectedGift = $state<Gift | null>(null);
+	let isReserving = $state(false);
 
-	function handleReserve(giftId: string) {
-		// This is where you would normally make an API call
-		// For now, we'll just show a prompt
-		const name = prompt('Votre nom / Your name / Su nombre:');
-		if (name) {
-			gifts = gifts.map(gift =>
-				gift.id === giftId
-					? { ...gift, isTaken: true, takenBy: name }
-					: gift
-			);
-			alert(m['giftList.thankYou']({ name }));
+	function handleReserveClick(giftId: string) {
+		const gift = gifts.find(g => g.id === giftId);
+		if (gift && !gift.isTaken) {
+			selectedGift = gift;
+			isModalOpen = true;
 		}
+	}
+
+	function handleModalClose() {
+		if (isReserving) return; // Prevent closing during submission
+		isModalOpen = false;
+		selectedGift = null;
+	}
+
+	async function handleReservation(event: CustomEvent<{ giftId: string; name: string }>) {
+		const { giftId, name } = event.detail;
+
+		isReserving = true;
+
+		try {
+			const response = await fetch(`/api/gifts/${giftId}/reserve`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ takenBy: name })
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => ({ message: 'Unknown error' })) as { message?: string };
+				throw new Error(errorData.message || `HTTP ${response.status}`);
+			}
+
+			const updatedGift = await response.json() as Gift;
+
+			// Update the gift in our local state
+			gifts = gifts.map(gift =>
+				gift.id === giftId ? updatedGift : gift
+			);
+
+			// Close modal and show success
+			isModalOpen = false;
+			selectedGift = null;
+
+			// Success notification with smooth animation
+			showSuccessNotification(name);
+
+		} catch (error) {
+			console.error('Failed to reserve gift:', error);
+
+			// Show error notification
+			showErrorNotification(error);
+		} finally {
+			isReserving = false;
+		}
+	}
+
+	// Success notification state
+	let successNotification = $state<{ show: boolean; name: string }>({
+		show: false,
+		name: ''
+	});
+
+	function showSuccessNotification(name: string) {
+		successNotification = { show: true, name };
+		setTimeout(() => {
+			successNotification = { show: false, name: '' };
+		}, 4000);
+	}
+
+	// Error notification state
+	let errorNotification = $state<{ show: boolean; message: string }>({
+		show: false,
+		message: ''
+	});
+
+	function showErrorNotification(error: unknown) {
+		let message = 'Erreur lors de la réservation / Error during reservation / Error durante la reserva';
+
+		if (error instanceof Error) {
+			if (error.message.includes('404')) {
+				message = 'Ce cadeau n\'existe plus / This gift no longer exists / Este regalo ya no existe';
+			} else if (error.message.includes('400') || error.message.includes('already')) {
+				message = 'Ce cadeau a déjà été réservé / This gift is already taken / Este regalo ya está reservado';
+			}
+		}
+
+		errorNotification = { show: true, message };
+		setTimeout(() => {
+			errorNotification = { show: false, message: '' };
+		}, 5000);
 	}
 
 	function handleDonate() {
@@ -30,6 +114,30 @@
 		alert('La fonction de donation sera bientôt disponible! / Donation feature coming soon! / ¡Función de donación próximamente!');
 	}
 </script>
+
+<!-- Success Notification -->
+{#if successNotification.show}
+	<div class="notification notification-success" transition:fly={{ y: -50, duration: 300 }}>
+		<div class="notification-content">
+			<span class="notification-icon">✅</span>
+			<span class="notification-text">
+				{m['giftList.thankYou']({ name: successNotification.name })}
+			</span>
+		</div>
+	</div>
+{/if}
+
+<!-- Error Notification -->
+{#if errorNotification.show}
+	<div class="notification notification-error" transition:fly={{ y: -50, duration: 300 }}>
+		<div class="notification-content">
+			<span class="notification-icon">❌</span>
+			<span class="notification-text">
+				{errorNotification.message}
+			</span>
+		</div>
+	</div>
+{/if}
 
 <WaveClipPath />
 <header class="hero-container">
@@ -59,14 +167,16 @@
 </header>
 
 <div class="container">
-
 	<section class="gift-section">
 		<h2>{m['giftList.title']()}</h2>
 		<p class="section-description">{m['giftList.description']()}</p>
 
 		<div class="gift-grid">
 			{#each gifts as gift (gift.id)}
-				<GiftCard {gift} onReserve={handleReserve} />
+				<GiftCard
+					{gift}
+					onReserve={handleReserveClick}
+				/>
 			{/each}
 		</div>
 	</section>
@@ -75,6 +185,14 @@
 		onDonate={handleDonate}
 	/>
 </div>
+
+<!-- Reservation Modal -->
+<ReservationModal
+	gift={selectedGift}
+	isOpen={isModalOpen}
+	close={handleModalClose}
+	reserve={handleReservation}
+/>
 
 <style>
     .container {
@@ -150,7 +268,7 @@
     }
 
     .hero-image {
-				max-width: 400px;
+        max-width: 400px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -175,13 +293,13 @@
         right: 0;
         bottom: 0;
         background: linear-gradient(45deg,
-            var(--color-pride-red),
-            var(--color-pride-orange),
-            var(--color-pride-yellow),
-            var(--color-pride-green),
-            var(--color-pride-blue),
-            var(--color-pride-purple),
-            var(--color-pride-pink)
+        var(--color-pride-red),
+        var(--color-pride-orange),
+        var(--color-pride-yellow),
+        var(--color-pride-green),
+        var(--color-pride-blue),
+        var(--color-pride-purple),
+        var(--color-pride-pink)
         );
         border-radius: calc(var(--radius-lg) + 5px);
         z-index: 0;
@@ -248,6 +366,45 @@
         }
     }
 
+    /* Notification Styles */
+    .notification {
+        position: fixed;
+        top: var(--spacing-lg);
+        right: var(--spacing-lg);
+        z-index: var(--z-toast);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        max-width: 400px;
+        overflow: hidden;
+    }
+
+    .notification-success {
+        background: var(--color-success);
+        color: var(--color-white);
+    }
+
+    .notification-error {
+        background: var(--color-danger);
+        color: var(--color-white);
+    }
+
+    .notification-content {
+        padding: var(--spacing-lg);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .notification-icon {
+        font-size: var(--font-size-lg);
+        flex-shrink: 0;
+    }
+
+    .notification-text {
+        font-weight: var(--font-weight-medium);
+        line-height: var(--line-height-normal);
+    }
+
     @media (max-width: 768px) {
         .container {
             padding: var(--spacing-md);
@@ -277,14 +434,14 @@
         }
 
         .hero-image {
-						max-width: min(300px, 80%);
+            max-width: min(300px, 80%);
             min-height: 200px;
             margin-top: var(--spacing-lg);
             margin-bottom: var(--spacing-md);
             height: auto;
             order: 3;
         }
-        
+
         .hero-image::before {
             filter: blur(5px);
         }
@@ -312,6 +469,13 @@
         .pride-square {
             width: 20px;
             height: 20px;
+        }
+
+        .notification {
+            top: var(--spacing-md);
+            right: var(--spacing-md);
+            left: var(--spacing-md);
+            max-width: none;
         }
     }
 </style>
