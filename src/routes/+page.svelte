@@ -3,10 +3,13 @@
 	import GiftCard from '$lib/components/GiftCard.svelte';
 	import DonationSection from '$lib/components/DonationSection.svelte';
 	import WaveClipPath from '$lib/components/WaveClipPath.svelte';
-	import { mockGifts } from '$lib/data/mockGifts';
 	import type { Gift } from '$lib/types/gift';
+	import type { PageProps } from '../../.svelte-kit/types/src/routes/$types';
 
-	let gifts = $state<Gift[]>([...mockGifts]);
+	let { data }: PageProps = $props();
+	let gifts = $state<Gift[]>(data.gifts as Gift[]);
+
+	// let gifts = $state<Gift[]>([...mockGifts]);
 
 	function handleReserve(giftId: string) {
 		// This is where you would normally make an API call
