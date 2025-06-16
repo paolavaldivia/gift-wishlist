@@ -11,31 +11,54 @@
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let gifts = $state<Gift[]>(data.gifts as Gift[]);
-	
+
 	// Modal state
 	let isModalOpen = $state(false);
 	let selectedGift = $state<Gift | null>(null);
-	
+
+	// Success notification state
+	let successNotification = $state<{ show: boolean; name: string }>({
+		show: false,
+		name: ''
+	});
+
+	// Error notification state
+	let errorNotification = $state<{ show: boolean; message: string }>({
+		show: false,
+		message: ''
+	});
+
+	// Simple flag to prevent reprocessing the same form result
+	let isProcessingForm = $state(false);
+
 	// Update gifts when form action completes
 	$effect(() => {
-		if (form && 'success' in form && form.success && form.gift) {
-			console.log('Form success, updating gift:', form.gift);
-			
-			gifts = gifts.map(g =>
-				g.id === form.gift.id ? form.gift : g
-			);
-			
-			// Show success notification
-			if (form.name) {
-				showSuccessNotification(form.name);
+		if (form && 'success' in form && !isProcessingForm) {
+			isProcessingForm = true;
+
+			if (form.success && form.gift) {
+				console.log('Form success, updating gift:', form.gift);
+
+				// Update gifts array with the new data
+				gifts = gifts.map(g =>
+					g.id === form.gift.id ? form.gift : g
+				);
+
+				// Handle UI updates asynchronously
+				setTimeout(() => {
+					if (form.name) {
+						showSuccessNotification(form.name);
+					}
+					isModalOpen = false;
+					selectedGift = null;
+					isProcessingForm = false;
+				}, 0);
+			} else if (!form.success) {
+				setTimeout(() => {
+					showErrorNotification(new Error(form.message || 'Unknown error'));
+					isProcessingForm = false;
+				}, 0);
 			}
-			
-			// Close modal
-			isModalOpen = false;
-			selectedGift = null;
-		} else if (form && 'success' in form && !form.success) {
-			// Show error notification
-			showErrorNotification(new Error(form.message || 'Unknown error'));
 		}
 	});
 
@@ -53,15 +76,13 @@
 	}
 
 	function handleReserve(event: CustomEvent<{ giftId: string; name: string }>) {
-		// This function will be called when the ReservationModal emits the reserve event
-		// We'll use a hidden form to submit the data
 		const { giftId, name } = event.detail;
-		
+
 		// Set form values
 		const giftIdInput = document.getElementById('hiddenGiftId') as HTMLInputElement;
 		const nameInput = document.getElementById('hiddenName') as HTMLInputElement;
 		const form = document.getElementById('hiddenReservationForm') as HTMLFormElement;
-		
+
 		if (giftIdInput && nameInput && form) {
 			giftIdInput.value = giftId;
 			nameInput.value = name;
@@ -69,24 +90,12 @@
 		}
 	}
 
-	// Success notification state
-	let successNotification = $state<{ show: boolean; name: string }>({
-		show: false,
-		name: ''
-	});
-
 	function showSuccessNotification(name: string) {
 		successNotification = { show: true, name };
 		setTimeout(() => {
 			successNotification = { show: false, name: '' };
 		}, 4000);
 	}
-
-	// Error notification state
-	let errorNotification = $state<{ show: boolean; message: string }>({
-		show: false,
-		message: ''
-	});
 
 	function showErrorNotification(error: unknown) {
 		let message = 'Erreur lors de la réservation / Error during reservation / Error durante la reserva';
@@ -106,7 +115,6 @@
 	}
 
 	function handleDonate() {
-		// This would open a payment modal or redirect to payment page
 		alert('La fonction de donation sera bientôt disponible! / Donation feature coming soon! / ¡Función de donación próximamente!');
 	}
 </script>
@@ -136,10 +144,10 @@
 {/if}
 
 <!-- Hidden form for SvelteKit action -->
-<form 
+<form
 	id="hiddenReservationForm"
-	method="POST" 
-	action="?/reserveGift" 
+	method="POST"
+	action="?/reserveGift"
 	use:enhance={() => {
 		return ({ update }) => {
 			update({ reset: false });

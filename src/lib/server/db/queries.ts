@@ -9,19 +9,21 @@ type DatabaseInstance = App.Locals['db'];
 export const giftsQueries = {
 	// Get all gifts
 	async getAll(db: DatabaseInstance): Promise<Gift[]> {
-		return sanitizeGifts(await db.select().from(gifts).orderBy(asc(gifts.name)));
+		const result = await db.select().from(gifts).orderBy(asc(gifts.name));
+		return sanitizeGifts(result);
 	},
 
 	// Get a specific gift by ID
 	async getById(db: DatabaseInstance, id: string): Promise<Gift | null> {
 		const result = await db.select().from(gifts).where(eq(gifts.id, id));
-		return result[0] || null;
+		if (!result[0]) return null;
+		return sanitizeGift(result[0]);
 	},
 
 	// Create a new gift
 	async create(db: DatabaseInstance, gift: NewGift) {
 		const result = await db.insert(gifts).values(gift).returning();
-		return result[0];
+		return sanitizeGift(result[0]);
 	},
 
 	// Update a gift
@@ -31,7 +33,7 @@ export const giftsQueries = {
 			.set({ ...updates, updatedAt: new Date() })
 			.where(eq(gifts.id, id))
 			.returning();
-		return result[0] || null;
+		return result[0] ? sanitizeGift(result[0]) : null;
 	},
 
 	// Reserve a gift
@@ -45,7 +47,7 @@ export const giftsQueries = {
 			})
 			.where(eq(gifts.id, id))
 			.returning();
-		return result[0] || null;
+		return result[0] ? sanitizeGift(result[0]) : null;
 	},
 
 	// Unreserve a gift
@@ -59,7 +61,7 @@ export const giftsQueries = {
 			})
 			.where(eq(gifts.id, id))
 			.returning();
-		return result[0] || null;
+		return result[0] ? sanitizeGift(result[0]) : null;
 	},
 
 	// Delete a gift
@@ -69,16 +71,22 @@ export const giftsQueries = {
 
 	// Get available (not taken) gifts
 	async getAvailable(db: DatabaseInstance) {
-		return sanitizeGifts(
-			await db.select().from(gifts).where(eq(gifts.isTaken, false)).orderBy(asc(gifts.name))
-		);
+		const result = await db
+			.select()
+			.from(gifts)
+			.where(eq(gifts.isTaken, false))
+			.orderBy(asc(gifts.name));
+		return sanitizeGifts(result);
 	},
 
 	// Get taken gifts
 	async getTaken(db: DatabaseInstance) {
-		return sanitizeGifts(
-			await db.select().from(gifts).where(eq(gifts.isTaken, true)).orderBy(desc(gifts.updatedAt))
-		);
+		const result = await db
+			.select()
+			.from(gifts)
+			.where(eq(gifts.isTaken, true))
+			.orderBy(desc(gifts.updatedAt));
+		return sanitizeGifts(result);
 	}
 };
 
@@ -186,10 +194,32 @@ export function generateId(): string {
 	return crypto.randomUUID();
 }
 
-function sanitizeGifts(gifts: Gift[]) {
-	return gifts.map((gift) => ({
+function sanitizeGift(gift: Gift): Gift {
+	let purchaseLinks: PurchaseLink[] = [];
+
+	try {
+		// Handle both string and already parsed JSON
+		if (typeof gift.purchaseLinks === 'string') {
+			purchaseLinks = JSON.parse(gift.purchaseLinks);
+		} else if (Array.isArray(gift.purchaseLinks)) {
+			purchaseLinks = gift.purchaseLinks;
+		}
+	} catch (error) {
+		console.error('Error parsing purchaseLinks for gift', gift.id, error);
+		purchaseLinks = [];
+	}
+
+	return {
 		...gift,
-		purchaseLinks: JSON.parse(gift.purchaseLinks as unknown as string) as PurchaseLink[],
-		approximatePrice: Number(gift.approximatePrice.toFixed(2))
-	}));
+		purchaseLinks,
+		approximatePrice: Number(gift.approximatePrice?.toFixed?.(2) ?? gift.approximatePrice),
+		// Ensure boolean consistency
+		isTaken: Boolean(gift.isTaken),
+		// Ensure takenBy is null if not taken
+		takenBy: gift.isTaken ? gift.takenBy : null
+	};
+}
+
+function sanitizeGifts(gifts: Gift[]): Gift[] {
+	return gifts.map(sanitizeGift);
 }
