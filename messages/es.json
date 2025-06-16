@@ -14,7 +14,13 @@
 		"taken": "Ya reservado por",
 		"reserve": "Reservo este regalo",
 		"alreadyTaken": "¡Ups, ya está reservado!",
-		"thankYou": "¡Gracias {name}! ❤️"
+		"thankYou": "¡Gracias {name}! ❤️",
+		"babyThanks": "¡Nuestr@ pequeñ@ inquilin@ te manda pataditas de agradecimiento desde la pancita! 👶",
+		"close": "Cerrar",
+		"name": "Tu nombre",
+		"namePlaceholder": "¿Cómo te llamas?",
+		"cancel": "Cancelar",
+		"reserving": "Reservando..."
 	},
 	"donation": {
 		"title": "Fondo para bebecite",

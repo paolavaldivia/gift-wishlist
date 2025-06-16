@@ -19,11 +19,12 @@
 
 	let name = $state('');
 	let isSubmitting = $state(false);
+	let isSuccess = $state(false);
 	let nameInput: HTMLInputElement|null = $state(null);
 
 	// Focus input when modal opens
 	$effect(() => {
-		if (isOpen && nameInput) {
+		if (isOpen && nameInput && !isSuccess) {
 			setTimeout(() => nameInput?.focus(), 100);
 		}
 	});
@@ -31,6 +32,7 @@
 	function handleClose() {
 		if (isSubmitting) return;
 		name = '';
+		isSuccess = false;
 		close();
 	}
 
@@ -61,8 +63,10 @@
 					name 
 				} 
 			}));
+			
+			// Show success state
+			isSuccess = true;
 		} finally {
-			// Reset form state - parent will handle closing modal
 			isSubmitting = false;
 		}
 	}
@@ -96,7 +100,7 @@
 		>
 			<!-- Modal Header -->
 			<header class="modal-header">
-				<h2 id="modal-title">{m['giftList.reserve']()}</h2>
+				<h2 id="modal-title">{isSuccess ? m['giftList.thankYou']({ name }) : m['giftList.reserve']()}</h2>
 				<button
 					class="close-button"
 					onclick={handleClose}
@@ -107,62 +111,75 @@
 				</button>
 			</header>
 
-			<!-- Gift Information -->
-			<div class="gift-preview">
-				<div class="gift-image">
-					<img src={gift.imagePath} alt={gift.name} />
+			{#if isSuccess}
+				<!-- Success View -->
+				<div class="success-message">
+					<div class="gift-image success-image">
+						<img src={gift.imagePath} alt={gift.name} />
+					</div>
+					<p class="thank-you-message">{m['giftList.babyThanks']({ name })}</p>
+					<button class="btn btn-primary close-btn" onclick={handleClose}>
+						{m['giftList.close']()}
+					</button>
 				</div>
-				<div class="gift-details">
-					<h3>{gift.name}</h3>
-					<p class="gift-description">{gift.description}</p>
-					<div class="gift-price">
-						{formatPrice(gift.approximatePrice, gift.currency)}
+			{:else}
+				<!-- Gift Information -->
+				<div class="gift-preview">
+					<div class="gift-image">
+						<img src={gift.imagePath} alt={gift.name} />
+					</div>
+					<div class="gift-details">
+						<h3>{gift.name}</h3>
+						<p class="gift-description">{gift.description}</p>
+						<div class="gift-price">
+							{formatPrice(gift.approximatePrice, gift.currency)}
+						</div>
 					</div>
 				</div>
-			</div>
 
-			<!-- Reservation Form -->
-			<form class="reservation-form" onsubmit={handleSubmit}>
-				<div class="form-group">
-					<label for="reservationName" class="form-label">
-						Votre nom / Your name / Su nombre
-					</label>
-					<input
-						id="reservationName"
-						bind:this={nameInput}
-						bind:value={name}
-						type="text"
-						class="form-input"
-						placeholder="Entrez votre nom..."
-						required
-						disabled={isSubmitting}
-						autocomplete="name"
-					/>
-				</div>
+				<!-- Reservation Form -->
+				<form class="reservation-form" onsubmit={handleSubmit}>
+					<div class="form-group">
+						<label for="reservationName" class="form-label">
+							{m['giftList.name']()}
+						</label>
+						<input
+							id="reservationName"
+							bind:this={nameInput}
+							bind:value={name}
+							type="text"
+							class="form-input"
+							placeholder={m['giftList.namePlaceholder']()}
+							required
+							disabled={isSubmitting}
+							autocomplete="name"
+						/>
+					</div>
 
-				<div class="form-actions">
-					<button
-						type="button"
-						class="btn btn-secondary"
-						onclick={handleClose}
-						disabled={isSubmitting}
-					>
-						Annuler / Cancel / Cancelar
-					</button>
-					<button
-						type="submit"
-						class="btn btn-primary"
-						disabled={!name.trim() || isSubmitting}
-					>
-						{#if isSubmitting}
-							<span class="spinner"></span>
-							Réservation...
-						{:else}
-							{m['giftList.reserve']()}
-						{/if}
-					</button>
-				</div>
-			</form>
+					<div class="form-actions">
+						<button
+							type="button"
+							class="btn btn-secondary"
+							onclick={handleClose}
+							disabled={isSubmitting}
+						>
+							{m['giftList.cancel']()}
+						</button>
+						<button
+							type="submit"
+							class="btn btn-primary"
+							disabled={!name.trim() || isSubmitting}
+						>
+							{#if isSubmitting}
+								<span class="spinner"></span>
+								{m['giftList.reserving']()}
+							{:else}
+								{m['giftList.reserve']()}
+							{/if}
+						</button>
+					</div>
+				</form>
+			{/if}
 		</div>
 	</div>
 {/if}
@@ -348,6 +365,28 @@
         to {
             transform: rotate(360deg);
         }
+    }
+
+    .success-message {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: var(--spacing-xl);
+        text-align: center;
+    }
+    
+    .success-image {
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .thank-you-message {
+        font-size: var(--font-size-xl);
+        color: var(--color-success);
+        margin-bottom: var(--spacing-xl);
+    }
+    
+    .close-btn {
+        min-width: 120px;
     }
 
     /* Mobile responsiveness */

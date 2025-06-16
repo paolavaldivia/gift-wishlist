@@ -5,13 +5,6 @@
 
 	let { gift, onReserve }: { gift: Gift; onReserve?: (giftId: string) => void } = $props();
 
-	// Add debugging
-	console.log(`GiftCard ${gift.id} rendered:`, {
-		name: gift.name,
-		isTaken: gift.isTaken,
-		takenBy: gift.takenBy
-	});
-
 	function handleReserve() {
 		if (!gift.isTaken && onReserve) {
 			onReserve(gift.id);

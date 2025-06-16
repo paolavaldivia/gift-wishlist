@@ -16,12 +16,6 @@
 	let isModalOpen = $state(false);
 	let selectedGift = $state<Gift | null>(null);
 
-	// Success notification state
-	let successNotification = $state<{ show: boolean; name: string }>({
-		show: false,
-		name: ''
-	});
-
 	// Error notification state
 	let errorNotification = $state<{ show: boolean; message: string }>({
 		show: false,
@@ -37,27 +31,15 @@
 			isProcessingForm = true;
 
 			if (form.success && form.gift) {
-				console.log('Form success, updating gift:', form.gift);
-
 				// Update gifts array with the new data
 				gifts = gifts.map(g =>
 					g.id === form.gift.id ? form.gift : g
 				);
-
-				// Handle UI updates asynchronously
-				setTimeout(() => {
-					if (form.name) {
-						showSuccessNotification(form.name);
-					}
-					isModalOpen = false;
-					selectedGift = null;
-					isProcessingForm = false;
-				}, 0);
 			} else if (!form.success) {
-				setTimeout(() => {
-					showErrorNotification(new Error(form.message || 'Unknown error'));
-					isProcessingForm = false;
-				}, 0);
+				showErrorNotification(new Error(form.message || 'Unknown error'));
+				isModalOpen = false;
+				selectedGift = null;
+				isProcessingForm = false;
 			}
 		}
 	});
@@ -90,13 +72,6 @@
 		}
 	}
 
-	function showSuccessNotification(name: string) {
-		successNotification = { show: true, name };
-		setTimeout(() => {
-			successNotification = { show: false, name: '' };
-		}, 4000);
-	}
-
 	function showErrorNotification(error: unknown) {
 		let message = 'Erreur lors de la réservation / Error during reservation / Error durante la reserva';
 
@@ -118,18 +93,6 @@
 		alert('La fonction de donation sera bientôt disponible! / Donation feature coming soon! / ¡Función de donación próximamente!');
 	}
 </script>
-
-<!-- Success Notification -->
-{#if successNotification.show}
-	<div class="notification notification-success" transition:fly={{ y: -50, duration: 300 }}>
-		<div class="notification-content">
-			<span class="notification-icon">✅</span>
-			<span class="notification-text">
-				{m['giftList.thankYou']({ name: successNotification.name })}
-			</span>
-		</div>
-	</div>
-{/if}
 
 <!-- Error Notification -->
 {#if errorNotification.show}

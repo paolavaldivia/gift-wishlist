@@ -12,9 +12,15 @@
 		"approximatePrice": "Prix indicatif",
 		"buyAt": "Où l'acheter",
 		"taken": "Déjà réservé par",
-		"reserve": "Je réserve ce cadeau",
 		"alreadyTaken": "Oups, déjà pris !",
-		"thankYou": "Merci {name} ! ❤️"
+		"thankYou": "Merci {name} ! ❤️",
+		"babyThanks": "Notre petit locataire vous envoie des petits coups de pied de remerciement depuis le ventre ! 👶",
+		"close": "Fermer",
+		"name": "Votre nom",
+		"namePlaceholder": "Comment vous appelez-vous ?",
+		"cancel": "Annuler",
+		"reserve": "Je réserve ce cadeau",
+		"reserving": "Réservation en cours..."
 	},
 	"donation": {
 		"title": "Cagnotte de naissance",

@@ -13,8 +13,18 @@
     "buyAt": "Where to buy",
     "taken": "Already reserved by",
     "reserve": "I'll get this gift",
+    "reserving": "Reserving...",
     "alreadyTaken": "Oops, already taken!",
-    "thankYou": "Thank you {name}! ❤️"
+    "thankYou": "Thank you {name}! ❤️",
+    "babyThanks": "Our tiny tenant sends tiny high-fives from the womb! 👶",
+    "reserved": "Reserved by {name}",
+    "reservedByYou": "Reserved by you!",
+    "reservedByYouMessage": "You have reserved this gift!",
+    "name": "Name",
+    "namePlaceholder": "What's your name?",
+    "confirmation": "Confirm",
+    "cancel": "Cancel",
+    "close": "Close"
   },
   "donation": {
     "title": "Baby Fund",
