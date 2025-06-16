@@ -117,7 +117,29 @@
 					<div class="gift-image success-image">
 						<img src={gift.imagePath} alt={gift.name} />
 					</div>
-					<p class="thank-you-message">{m['giftList.babyThanks']({ name })}</p>
+					<p class="thank-you-message">{m['giftList.thankYou']({ name })}</p>
+					<p>{m['giftList.babyThanks']()}</p>
+
+					<!-- Added price and purchase links -->
+					<div class="success-details">
+						<div class="gift-price success-price">
+							{formatPrice(gift.approximatePrice, gift.currency)}
+						</div>
+
+						{#if gift.purchaseLinks && gift.purchaseLinks.length > 0}
+							<div class="purchase-links">
+								<span class="label">{m['giftList.buyAt']()}: </span>
+								<div class="links">
+									{#each gift.purchaseLinks as link (link.url)}
+										<a href={link.url} target="_blank" rel="noopener noreferrer" class="purchase-link">
+											{link.siteName}
+										</a>
+									{/each}
+								</div>
+							</div>
+						{/if}
+					</div>
+
 					<button class="btn btn-primary close-btn" onclick={handleClose}>
 						{m['giftList.close']()}
 					</button>
@@ -417,5 +439,48 @@
         .form-actions .btn {
             width: 100%;
         }
+    }
+
+    /* Add these new styles */
+    .success-details {
+        margin: var(--spacing-md) 0;
+        text-align: center;
+    }
+
+    .success-price {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .purchase-links {
+        margin-top: var(--spacing-md);
+    }
+
+    .purchase-links .label {
+        color: var(--color-gray-500);
+        font-weight: var(--font-weight-medium);
+        display: block;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .links {
+        display: flex;
+        gap: var(--spacing-sm);
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .purchase-link {
+        color: var(--color-primary);
+        text-decoration: none;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        background: var(--color-gray-100);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-sm);
+        transition: background-color var(--transition-fast);
+    }
+
+    .purchase-link:hover {
+        background: var(--color-gray-200);
+        text-decoration: underline;
     }
 </style>

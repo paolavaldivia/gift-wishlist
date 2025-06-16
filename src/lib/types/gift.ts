@@ -7,7 +7,7 @@ export interface Gift {
 	currency: string;
 	purchaseLinks: PurchaseLink[];
 	isTaken: boolean;
-	takenBy?: string;
+	takenBy?: string | null;
 }
 
 export interface PurchaseLink {
