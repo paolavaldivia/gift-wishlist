@@ -17,6 +17,18 @@
 			currency: currency
 		}).format(price);
 	}
+
+	// NEW: Helper to display the reserver's name with privacy consideration
+	function getReserverDisplayName(gift: Gift): string {
+		if (!gift.isTaken) return '';
+
+		// If privacy is enabled or name is not available, show anonymous message
+		if (gift.hideReserverName || !gift.takenBy) {
+			return m['giftList.anonymousReserver']();
+		}
+
+		return gift.takenBy;
+	}
 </script>
 
 <WaveClipPath />
@@ -50,10 +62,13 @@
 			</div>
 		</div>
 
-		{#if gift.isTaken && gift.takenBy}
-			<div class="taken-by">
+		{#if gift.isTaken}
+			<div class="taken-by" class:anonymous={gift.hideReserverName || !gift.takenBy}>
 				<span class="label">{m['giftList.taken']()}: </span>
-				<span class="name">{gift.takenBy}</span>
+				<span class="name">{getReserverDisplayName(gift)}</span>
+				{#if gift.hideReserverName}
+					<span class="privacy-indicator" title={m['giftList.privacyEnabled']()}>🔒</span>
+				{/if}
 			</div>
 		{:else}
 			<button
@@ -184,11 +199,26 @@
         margin-top: auto;
         padding-top: var(--spacing-sm);
         border-top: 1px solid var(--color-gray-100);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
     }
 
     .taken-by .name {
         color: var(--color-danger);
         font-weight: var(--font-weight-bold);
+    }
+
+    /* NEW: Styling for anonymous reservations */
+    .taken-by.anonymous .name {
+        color: var(--color-gray-500);
+        font-style: italic;
+    }
+
+    .privacy-indicator {
+        font-size: var(--font-size-sm);
+        opacity: 0.7;
+        cursor: help;
     }
 
     .reserve-button {

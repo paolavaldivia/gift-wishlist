@@ -1,7 +1,6 @@
 import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 import { giftsQueries } from '$lib/server/db/queries';
-import type { Gift } from '$lib/types/gift';
 import { handleApiError } from '$lib/server/utils';
 
 export const POST: RequestHandler = async ({ params, request, locals }) => {
@@ -10,13 +9,21 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 	}
 
 	try {
-		const { takenBy } = (await request.json()) as Gift;
+		const { takenBy, hideReserverName } = (await request.json()) as {
+			takenBy: string;
+			hideReserverName?: boolean; // NEW: Privacy parameter
+		};
 
 		if (!takenBy) {
 			throw error(400, 'takenBy is required');
 		}
 
-		const reserved = await giftsQueries.reserve(locals.db, params.id, takenBy);
+		const reserved = await giftsQueries.reserve(
+			locals.db,
+			params.id,
+			takenBy,
+			hideReserverName || false
+		);
 
 		if (!reserved) {
 			throw error(404, 'Gift not found');

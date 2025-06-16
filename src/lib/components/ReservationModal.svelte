@@ -13,11 +13,12 @@
 		gift: Gift | null;
 		isOpen: boolean;
 		close: () => void;
-		reserve: (event: CustomEvent<{ giftId: string; name: string }>) => void;
+		reserve: (event: CustomEvent<{ giftId: string; name: string; hideReserverName: boolean }>) => void;
 	} = $props();
 
 
 	let name = $state('');
+	let hideReserverName = $state(false); // NEW: Privacy state
 	let isSubmitting = $state(false);
 	let isSuccess = $state(false);
 	let nameInput: HTMLInputElement|null = $state(null);
@@ -32,6 +33,7 @@
 	function handleClose() {
 		if (isSubmitting) return;
 		name = '';
+		hideReserverName = false; // Reset privacy state
 		isSuccess = false;
 		close();
 	}
@@ -50,20 +52,21 @@
 
 	function handleSubmit(event: Event) {
 		event.preventDefault();
-		
+
 		if (!gift || !name.trim() || isSubmitting) return;
 
 		isSubmitting = true;
 
 		try {
-			// Dispatch the reserve event with the gift ID and name
-			reserve(new CustomEvent('reserve', { 
-				detail: { 
-					giftId: gift.id, 
-					name 
-				} 
+			// Dispatch the reserve event with the gift ID, name, and privacy preference
+			reserve(new CustomEvent('reserve', {
+				detail: {
+					giftId: gift.id,
+					name,
+					hideReserverName // NEW: Include privacy preference
+				}
 			}));
-			
+
 			// Show success state
 			isSuccess = true;
 		} finally {
@@ -176,6 +179,20 @@
 							disabled={isSubmitting}
 							autocomplete="name"
 						/>
+					</div>
+
+					<!-- NEW: Privacy checkbox -->
+					<div class="form-group checkbox-group">
+						<label class="checkbox-label">
+							<input
+								type="checkbox"
+								bind:checked={hideReserverName}
+								disabled={isSubmitting}
+								class="checkbox-input"
+							/>
+							<span class="checkbox-text">{m['giftList.hideMyName']()}</span>
+						</label>
+						<p class="privacy-note">{m['giftList.privacyNote']()}</p>
 					</div>
 
 					<div class="form-actions">
@@ -360,6 +377,41 @@
         cursor: not-allowed;
     }
 
+    /* NEW: Privacy checkbox styles */
+    .checkbox-group {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+        cursor: pointer;
+        font-size: var(--font-size-sm);
+        color: var(--color-gray-700);
+    }
+
+    .checkbox-input {
+        margin: 0;
+        width: 1.2rem;
+        height: 1.2rem;
+        flex-shrink: 0;
+        cursor: pointer;
+        accent-color: var(--color-primary);
+    }
+
+    .checkbox-text {
+        line-height: 1.3;
+    }
+
+    .privacy-note {
+        margin: var(--spacing-xs) 0 0 1.7rem;
+        font-size: var(--font-size-xs);
+        color: var(--color-gray-500);
+        font-style: italic;
+        line-height: var(--line-height-normal);
+    }
+
     .form-actions {
         display: flex;
         gap: var(--spacing-md);
@@ -396,17 +448,17 @@
         padding: var(--spacing-xl);
         text-align: center;
     }
-    
+
     .success-image {
         margin-bottom: var(--spacing-lg);
     }
-    
+
     .thank-you-message {
         font-size: var(--font-size-xl);
         color: var(--color-success);
         margin-bottom: var(--spacing-xl);
     }
-    
+
     .close-btn {
         min-width: 120px;
     }

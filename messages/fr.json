@@ -20,7 +20,11 @@
 		"namePlaceholder": "Comment vous appelez-vous ?",
 		"cancel": "Annuler",
 		"reserve": "Je réserve ce cadeau",
-		"reserving": "Réservation en cours..."
+		"reserving": "Réservation en cours...",
+		"hideMyName": "Masquer mon nom sur la liste",
+		"privacyNote": "Votre nom ne sera pas affiché publiquement si cette option est cochée",
+		"anonymousReserver": "Quelqu'un (anonyme)",
+		"privacyEnabled": "Cette personne a choisi de rester anonyme"
 	},
 	"donation": {
 		"title": "Cagnotte de naissance",

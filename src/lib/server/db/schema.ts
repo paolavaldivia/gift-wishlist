@@ -18,6 +18,7 @@ export const gifts = sqliteTable('gifts', {
 		.default([]),
 	isTaken: integer('is_taken', { mode: 'boolean' }).notNull().default(false),
 	takenBy: text('taken_by'),
+	hideReserverName: integer('hide_reserver_name', { mode: 'boolean' }).notNull().default(false),
 	// Timestamps
 	createdAt: integer('created_at', { mode: 'timestamp' })
 		.notNull()
@@ -62,6 +63,9 @@ export const contributors = sqliteTable('contributors', {
 	amount: real('amount').notNull(),
 	email: text('email'), // Optional for contact
 	message: text('message'), // Optional contribution message
+	hideContributorName: integer('hide_contributor_name', { mode: 'boolean' })
+		.notNull()
+		.default(false),
 	createdAt: integer('created_at', { mode: 'timestamp' })
 		.notNull()
 		.default(sql`(unixepoch())`)

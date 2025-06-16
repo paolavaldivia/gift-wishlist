@@ -13,6 +13,7 @@
 		"buyAt": "Dónde comprar",
 		"taken": "Ya reservado por",
 		"reserve": "Reservo este regalo",
+		"reserving": "Reservando...",
 		"alreadyTaken": "¡Ups, ya está reservado!",
 		"thankYou": "¡Gracias {name}! ❤️",
 		"babyThanks": "¡Nuestr@ pequeñ@ inquilin@ te manda pataditas de agradecimiento desde la pancita! 👶",
@@ -20,7 +21,10 @@
 		"name": "Tu nombre",
 		"namePlaceholder": "¿Cómo te llamas?",
 		"cancel": "Cancelar",
-		"reserving": "Reservando..."
+		"hideMyName": "Ocultar mi nombre en la lista",
+		"privacyNote": "Tu nombre no se mostrará públicamente si esta opción está marcada",
+		"anonymousReserver": "Alguien (anónimo)",
+		"privacyEnabled": "Esta persona eligió permanecer anónima"
 	},
 	"donation": {
 		"title": "Fondo para bebecite",

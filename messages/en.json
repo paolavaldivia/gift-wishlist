@@ -24,7 +24,11 @@
     "namePlaceholder": "What's your name?",
     "confirmation": "Confirm",
     "cancel": "Cancel",
-    "close": "Close"
+    "close": "Close",
+    "hideMyName": "Hide my name on the list",
+    "privacyNote": "Your name will not be displayed publicly if this option is checked",
+    "anonymousReserver": "Someone (anonymous)",
+    "privacyEnabled": "This person chose to remain anonymous"
   },
   "donation": {
     "title": "Baby Fund",

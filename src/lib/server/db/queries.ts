@@ -36,13 +36,19 @@ export const giftsQueries = {
 		return result[0] ? sanitizeGift(result[0]) : null;
 	},
 
-	// Reserve a gift
-	async reserve(db: DatabaseInstance, id: string, takenBy: string): Promise<Gift | null> {
+	// Reserve a gift - now with privacy option
+	async reserve(
+		db: DatabaseInstance,
+		id: string,
+		takenBy: string,
+		hideReserverName = false
+	): Promise<Gift | null> {
 		const result = await db
 			.update(gifts)
 			.set({
 				isTaken: true,
 				takenBy,
+				hideReserverName,
 				updatedAt: new Date()
 			})
 			.where(eq(gifts.id, id))
@@ -57,6 +63,7 @@ export const giftsQueries = {
 			.set({
 				isTaken: false,
 				takenBy: null,
+				hideReserverName: false, // Reset privacy setting when unreserving
 				updatedAt: new Date()
 			})
 			.where(eq(gifts.id, id))
@@ -106,7 +113,7 @@ export const bigGiftsQueries = {
 
 				return {
 					...bigGift,
-					contributors: giftContributors
+					contributors: sanitizeContributors(giftContributors)
 				};
 			})
 		);
@@ -127,7 +134,7 @@ export const bigGiftsQueries = {
 
 		return {
 			...bigGift[0],
-			contributors: giftContributors
+			contributors: sanitizeContributors(giftContributors)
 		};
 	},
 
@@ -137,7 +144,7 @@ export const bigGiftsQueries = {
 		return result[0];
 	},
 
-	// Add a contribution to a big gift
+	// Add a contribution to a big gift - now with privacy option
 	async addContribution(db: DatabaseInstance, contribution: NewContributor) {
 		const result = await db.insert(contributors).values(contribution).returning();
 
@@ -152,7 +159,7 @@ export const bigGiftsQueries = {
 				.where(eq(bigGifts.id, contribution.bigGiftId));
 		}
 
-		return result[0];
+		return sanitizeContributor(result[0]);
 	},
 
 	// Update big gift current amount (recalculate from all contributions)
@@ -215,11 +222,29 @@ function sanitizeGift(gift: Gift): Gift {
 		approximatePrice: Number(gift.approximatePrice?.toFixed?.(2) ?? gift.approximatePrice),
 		// Ensure boolean consistency
 		isTaken: Boolean(gift.isTaken),
-		// Ensure takenBy is null if not taken
-		takenBy: gift.isTaken ? gift.takenBy : null
+		hideReserverName: Boolean(gift.hideReserverName),
+		takenBy: gift.isTaken ? (gift.hideReserverName ? null : gift.takenBy) : null
 	};
 }
 
 function sanitizeGifts(gifts: Gift[]): Gift[] {
 	return gifts.map(sanitizeGift);
+}
+
+// Define a type for sanitized contributor
+type SanitizedContributor = Omit<typeof contributors.$inferSelect, 'contributors'>;
+
+function sanitizeContributor(contributor: typeof contributors.$inferSelect): SanitizedContributor {
+	return {
+		...contributor,
+		hideContributorName: Boolean(contributor.hideContributorName),
+		// Apply privacy: hide name if privacy is enabled
+		name: contributor.hideContributorName ? '' : contributor.name
+	};
+}
+
+function sanitizeContributors(
+	contributors: Array<typeof contributors.$inferSelect>
+): Array<SanitizedContributor> {
+	return contributors.map(sanitizeContributor);
 }

@@ -57,17 +57,20 @@
 		selectedGift = null;
 	}
 
-	function handleReserve(event: CustomEvent<{ giftId: string; name: string }>) {
-		const { giftId, name } = event.detail;
+	// NEW: Updated to handle privacy preference
+	function handleReserve(event: CustomEvent<{ giftId: string; name: string; hideReserverName: boolean }>) {
+		const { giftId, name, hideReserverName } = event.detail;
 
 		// Set form values
 		const giftIdInput = document.getElementById('hiddenGiftId') as HTMLInputElement;
 		const nameInput = document.getElementById('hiddenName') as HTMLInputElement;
+		const hideNameInput = document.getElementById('hiddenHideReserverName') as HTMLInputElement; // NEW
 		const form = document.getElementById('hiddenReservationForm') as HTMLFormElement;
 
-		if (giftIdInput && nameInput && form) {
+		if (giftIdInput && nameInput && hideNameInput && form) {
 			giftIdInput.value = giftId;
 			nameInput.value = name;
+			hideNameInput.value = hideReserverName.toString(); // NEW
 			form.requestSubmit();
 		}
 	}
@@ -120,6 +123,8 @@
 >
 	<input id="hiddenGiftId" type="hidden" name="giftId" value="" />
 	<input id="hiddenName" type="hidden" name="name" value="" />
+	<!-- NEW: Hidden input for privacy preference -->
+	<input id="hiddenHideReserverName" type="hidden" name="hideReserverName" value="" />
 </form>
 
 <WaveClipPath />
@@ -359,11 +364,6 @@
         box-shadow: var(--shadow-lg);
         max-width: 400px;
         overflow: hidden;
-    }
-
-    .notification-success {
-        background: var(--color-success);
-        color: var(--color-white);
     }
 
     .notification-error {

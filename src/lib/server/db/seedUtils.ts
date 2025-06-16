@@ -10,7 +10,7 @@ export async function seedDatabase(db: DatabaseInstance) {
 		{ gifts },
 		{
 			batchSize: 2,
-			count: 5
+			count: process.env.NODE_ENV === 'production' ? 5 : 10
 		}
 	).refine((f) => ({
 		bigGifts: {

@@ -37,6 +37,8 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const giftId = formData.get('giftId')?.toString();
 		const name = formData.get('name')?.toString();
+		// NEW: Get privacy preference from form
+		const hideReserverName = formData.get('hideReserverName') === 'true';
 
 		if (!giftId || !name) {
 			return fail(400, {
@@ -62,8 +64,8 @@ export const actions: Actions = {
 				});
 			}
 
-			// Reserve the gift
-			const reserved = await giftsQueries.reserve(locals.db, giftId, name);
+			// Reserve the gift with privacy preference
+			const reserved = await giftsQueries.reserve(locals.db, giftId, name, hideReserverName);
 
 			if (!reserved) {
 				return fail(404, {
@@ -72,13 +74,12 @@ export const actions: Actions = {
 				});
 			}
 
-			console.log('Reserved gift:', reserved);
-
 			// Make sure to explicitly return success: true
 			return {
 				success: true,
 				gift: reserved,
-				name
+				name,
+				hideReserverName
 			};
 		} catch (err) {
 			console.error('Failed to reserve gift:', err);

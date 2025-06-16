@@ -8,6 +8,7 @@ export interface Gift {
 	purchaseLinks: PurchaseLink[];
 	isTaken: boolean;
 	takenBy?: string | null;
+	hideReserverName?: boolean;
 }
 
 export interface PurchaseLink {
@@ -22,6 +23,11 @@ export interface BigGift extends Gift {
 }
 
 export interface Contributor {
+	id: string;
 	name: string;
 	amount: number;
+	email?: string;
+	message?: string;
+	hideContributorName?: boolean;
+	createdAt: Date;
 }
