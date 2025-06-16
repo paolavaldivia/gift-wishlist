@@ -1,20 +1,43 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages';
 	import { fly } from 'svelte/transition';
+	import { enhance } from '$app/forms';
 	import GiftCard from '$lib/components/GiftCard.svelte';
 	import DonationSection from '$lib/components/DonationSection.svelte';
 	import WaveClipPath from '$lib/components/WaveClipPath.svelte';
 	import ReservationModal from '$lib/components/ReservationModal.svelte';
 	import type { Gift } from '$lib/types/gift';
-	import type { PageProps } from '../../.svelte-kit/types/src/routes/$types';
+	import type { ActionData, PageData } from './$types';
 
-	let { data }: PageProps = $props();
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let gifts = $state<Gift[]>(data.gifts as Gift[]);
-
+	
 	// Modal state
 	let isModalOpen = $state(false);
 	let selectedGift = $state<Gift | null>(null);
-	let isReserving = $state(false);
+	
+	// Update gifts when form action completes
+	$effect(() => {
+		if (form && 'success' in form && form.success && form.gift) {
+			console.log('Form success, updating gift:', form.gift);
+			
+			gifts = gifts.map(g =>
+				g.id === form.gift.id ? form.gift : g
+			);
+			
+			// Show success notification
+			if (form.name) {
+				showSuccessNotification(form.name);
+			}
+			
+			// Close modal
+			isModalOpen = false;
+			selectedGift = null;
+		} else if (form && 'success' in form && !form.success) {
+			// Show error notification
+			showErrorNotification(new Error(form.message || 'Unknown error'));
+		}
+	});
 
 	function handleReserveClick(giftId: string) {
 		const gift = gifts.find(g => g.id === giftId);
@@ -25,51 +48,24 @@
 	}
 
 	function handleModalClose() {
-		if (isReserving) return; // Prevent closing during submission
 		isModalOpen = false;
 		selectedGift = null;
 	}
 
-	async function handleReservation(event: CustomEvent<{ giftId: string; name: string }>) {
+	function handleReserve(event: CustomEvent<{ giftId: string; name: string }>) {
+		// This function will be called when the ReservationModal emits the reserve event
+		// We'll use a hidden form to submit the data
 		const { giftId, name } = event.detail;
-
-		isReserving = true;
-
-		try {
-			const response = await fetch(`/api/gifts/${giftId}/reserve`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ takenBy: name })
-			});
-
-			if (!response.ok) {
-				const errorData = await response.json().catch(() => ({ message: 'Unknown error' })) as { message?: string };
-				throw new Error(errorData.message || `HTTP ${response.status}`);
-			}
-
-			const updatedGift = await response.json() as Gift;
-
-			// Update the gift in our local state
-			gifts = gifts.map(gift =>
-				gift.id === giftId ? updatedGift : gift
-			);
-
-			// Close modal and show success
-			isModalOpen = false;
-			selectedGift = null;
-
-			// Success notification with smooth animation
-			showSuccessNotification(name);
-
-		} catch (error) {
-			console.error('Failed to reserve gift:', error);
-
-			// Show error notification
-			showErrorNotification(error);
-		} finally {
-			isReserving = false;
+		
+		// Set form values
+		const giftIdInput = document.getElementById('hiddenGiftId') as HTMLInputElement;
+		const nameInput = document.getElementById('hiddenName') as HTMLInputElement;
+		const form = document.getElementById('hiddenReservationForm') as HTMLFormElement;
+		
+		if (giftIdInput && nameInput && form) {
+			giftIdInput.value = giftId;
+			nameInput.value = name;
+			form.requestSubmit();
 		}
 	}
 
@@ -139,6 +135,22 @@
 	</div>
 {/if}
 
+<!-- Hidden form for SvelteKit action -->
+<form 
+	id="hiddenReservationForm"
+	method="POST" 
+	action="?/reserveGift" 
+	use:enhance={() => {
+		return ({ update }) => {
+			update({ reset: false });
+		};
+	}}
+	style="display: none;"
+>
+	<input id="hiddenGiftId" type="hidden" name="giftId" value="" />
+	<input id="hiddenName" type="hidden" name="name" value="" />
+</form>
+
 <WaveClipPath />
 <header class="hero-container">
 	<div class="hero wave-top">
@@ -191,7 +203,7 @@
 	gift={selectedGift}
 	isOpen={isModalOpen}
 	close={handleModalClose}
-	reserve={handleReservation}
+	reserve={handleReserve}
 />
 
 <style>

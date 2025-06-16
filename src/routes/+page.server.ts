@@ -1,6 +1,6 @@
-import type { PageServerLoad } from './$types';
+import type { Actions, PageServerLoad } from './$types';
 import { giftsQueries } from '$lib/server/db/queries';
-import { error } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 import { building } from '$app/environment';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -22,5 +22,70 @@ export const load: PageServerLoad = async ({ locals }) => {
 	} catch (err) {
 		console.error('Failed to load gifts:', err);
 		throw error(500, 'Failed to load gifts');
+	}
+};
+
+export const actions: Actions = {
+	reserveGift: async ({ request, locals }) => {
+		if (!locals.db) {
+			return fail(500, {
+				success: false,
+				message: 'Database not available'
+			});
+		}
+
+		const formData = await request.formData();
+		const giftId = formData.get('giftId')?.toString();
+		const name = formData.get('name')?.toString();
+
+		if (!giftId || !name) {
+			return fail(400, {
+				success: false,
+				message: 'Gift ID and name are required'
+			});
+		}
+
+		try {
+			// Check if gift is already taken
+			const existingGift = await giftsQueries.getById(locals.db, giftId);
+			if (!existingGift) {
+				return fail(404, {
+					success: false,
+					message: 'Gift not found'
+				});
+			}
+
+			if (existingGift.isTaken) {
+				return fail(400, {
+					success: false,
+					message: 'Gift is already taken'
+				});
+			}
+
+			// Reserve the gift
+			const reserved = await giftsQueries.reserve(locals.db, giftId, name);
+
+			if (!reserved) {
+				return fail(404, {
+					success: false,
+					message: 'Gift not found'
+				});
+			}
+
+			console.log('Reserved gift:', reserved);
+
+			// Make sure to explicitly return success: true
+			return {
+				success: true,
+				gift: reserved,
+				name
+			};
+		} catch (err) {
+			console.error('Failed to reserve gift:', err);
+			return fail(500, {
+				success: false,
+				message: err instanceof Error ? err.message : 'Failed to reserve gift'
+			});
+		}
 	}
 };

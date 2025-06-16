@@ -8,12 +8,12 @@ type DatabaseInstance = App.Locals['db'];
 // Regular Gifts Functions
 export const giftsQueries = {
 	// Get all gifts
-	async getAll(db: DatabaseInstance) {
+	async getAll(db: DatabaseInstance): Promise<Gift[]> {
 		return sanitizeGifts(await db.select().from(gifts).orderBy(asc(gifts.name)));
 	},
 
 	// Get a specific gift by ID
-	async getById(db: DatabaseInstance, id: string) {
+	async getById(db: DatabaseInstance, id: string): Promise<Gift | null> {
 		const result = await db.select().from(gifts).where(eq(gifts.id, id));
 		return result[0] || null;
 	},
@@ -25,7 +25,7 @@ export const giftsQueries = {
 	},
 
 	// Update a gift
-	async update(db: DatabaseInstance, id: string, updates: Partial<NewGift>) {
+	async update(db: DatabaseInstance, id: string, updates: Partial<NewGift>): Promise<Gift | null> {
 		const result = await db
 			.update(gifts)
 			.set({ ...updates, updatedAt: new Date() })
@@ -35,7 +35,7 @@ export const giftsQueries = {
 	},
 
 	// Reserve a gift
-	async reserve(db: DatabaseInstance, id: string, takenBy: string) {
+	async reserve(db: DatabaseInstance, id: string, takenBy: string): Promise<Gift | null> {
 		const result = await db
 			.update(gifts)
 			.set({
@@ -49,7 +49,7 @@ export const giftsQueries = {
 	},
 
 	// Unreserve a gift
-	async unreserve(db: DatabaseInstance, id: string) {
+	async unreserve(db: DatabaseInstance, id: string): Promise<Gift | null> {
 		const result = await db
 			.update(gifts)
 			.set({

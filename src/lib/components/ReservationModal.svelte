@@ -19,7 +19,7 @@
 
 	let name = $state('');
 	let isSubmitting = $state(false);
-	let nameInput: HTMLInputElement;
+	let nameInput: HTMLInputElement|null = $state(null);
 
 	// Focus input when modal opens
 	$effect(() => {
@@ -46,16 +46,23 @@
 		}
 	}
 
-	async function handleSubmit() {
+	function handleSubmit(event: Event) {
+		event.preventDefault();
+		
 		if (!gift || !name.trim() || isSubmitting) return;
 
 		isSubmitting = true;
 
 		try {
-			reserve?.(new CustomEvent('reserve', { detail: { giftId: gift.id, name } }));
+			// Dispatch the reserve event with the gift ID and name
+			reserve(new CustomEvent('reserve', { 
+				detail: { 
+					giftId: gift.id, 
+					name 
+				} 
+			}));
 		} finally {
 			// Reset form state - parent will handle closing modal
-			name = '';
 			isSubmitting = false;
 		}
 	}
