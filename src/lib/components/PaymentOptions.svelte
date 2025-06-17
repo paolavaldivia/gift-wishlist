@@ -20,7 +20,7 @@
     }
 </script>
 
-<Modal show={show} title={m['donation.title']()} {onClose}>
+<Modal show={show} title={m['donation.title']()} {onClose} maxWidth="600px">
     <div class="payment-options">
         <div class="payment-option">
             <h3>{m['donation.bankTransfer']()}</h3>
@@ -85,14 +85,14 @@
 
     .rib-row {
         display: flex;
-        flex-wrap: wrap;
-        gap: var(--spacing-sm);
         align-items: center;
+        gap: var(--spacing-sm);
     }
 
     .rib-label {
         font-weight: var(--font-weight-semibold);
         min-width: 120px;
+        flex-shrink: 0;
     }
 
     .rib-value {
@@ -101,6 +101,9 @@
         padding: var(--spacing-xs) var(--spacing-sm);
         border-radius: var(--radius-sm);
         border: 1px solid var(--color-gray-200);
+        flex: 1;
+        overflow: auto;
+        white-space: nowrap;
     }
 
     .btn-paypal {
@@ -137,6 +140,7 @@
         align-items: center;
         justify-content: center;
         color: var(--color-gray-500);
+        flex-shrink: 0;
     }
 
     .copy-btn:hover {
@@ -151,15 +155,29 @@
 
     @media (max-width: 768px) {
         .rib-row {
-            flex-direction: row;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-areas: 
+                "label label"
+                "value button";
             gap: var(--spacing-xs);
-            align-items: center;
+            margin-bottom: var(--spacing-sm);
         }
 
         .rib-label {
+            grid-area: label;
             min-width: auto;
-            margin-right: auto;
+            width: 100%;
+        }
+
+        .rib-value {
+            grid-area: value;
+            width: 100%;
+        }
+        
+        .copy-btn {
+            grid-area: button;
+            align-self: center;
         }
     }
 </style>

@@ -5,9 +5,10 @@
     export let show = false;
     export let title = '';
     export let onClose = () => {};
+    export let maxWidth = '500px'; // New prop for custom width
 
-    function handleBackdropClick(event: MouseEvent) {
-        if (event.target === event.currentTarget) {
+    function handleBackdropClick(event: MouseEvent | KeyboardEvent) {
+        if (event instanceof MouseEvent && event.target === event.currentTarget) {
             onClose();
         }
     }
@@ -19,12 +20,13 @@
     }
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 {#if show}
     <div 
-        class="modal-backdrop" 
-        on:click={handleBackdropClick}
+        class="modal-backdrop"
+        onclick={handleBackdropClick}
+        onkeydown={handleKeydown}
         transition:fade={{ duration: 200 }}
         role="dialog"
         aria-modal="true"
@@ -33,6 +35,7 @@
     >
         <div 
             class="modal-content"
+            style="max-width: {maxWidth};"
             transition:fly={{
                 y: 50,
                 duration: 300,
@@ -44,7 +47,7 @@
                 <h2 id="modal-title">{title}</h2>
                 <button
                     class="close-button"
-                    on:click={onClose}
+                    onclick={onClose}
                     aria-label="Close modal"
                 >
                     ×
