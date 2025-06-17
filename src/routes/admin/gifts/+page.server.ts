@@ -3,31 +3,35 @@ import type { Actions, PageServerLoad } from './$types';
 import { generateId, giftsQueries } from '$lib/server/db/queries';
 import { isValidCurrency } from '../../api/gifts/+server';
 import type { Gift } from '$lib/types/gift';
+import { AuthService } from '$lib/server/auth';
 
-// Admin authentication check middleware
-function checkAdminAuth(cookies: Cookies) {
-	const isAuthenticated = cookies.get('admin_session') === 'true';
-	if (!isAuthenticated) {
+// Enhanced admin authentication check
+function checkAdminAuth(cookies: Cookies): void {
+	const sessionToken = cookies.get('admin_session');
+
+	if (!sessionToken) {
+		throw redirect(302, '/admin');
+	}
+
+	const session = AuthService.verifyToken(sessionToken);
+
+	if (!session || session.role !== 'admin') {
+		// Clear invalid token
+		cookies.delete('admin_session', AuthService.clearCookieOptions());
 		throw redirect(302, '/admin');
 	}
 }
 
 export const load: PageServerLoad = async ({ cookies, locals }) => {
-	// Check if user is authenticated
+	// Validate admin authentication
 	checkAdminAuth(cookies);
 
 	try {
-		// Get all gifts from the database using giftsQueries
 		const allGifts = (await giftsQueries.getAll(locals.db)) as Gift[];
-
-		return {
-			gifts: allGifts
-		};
+		return { gifts: allGifts };
 	} catch (error) {
 		console.error('Error loading gifts:', error);
-		return {
-			gifts: []
-		};
+		return { gifts: [] };
 	}
 };
 
