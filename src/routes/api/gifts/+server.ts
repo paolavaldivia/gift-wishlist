@@ -32,7 +32,7 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 };
 
 // Replace the currencies.includes check with a type guard
-function isValidCurrency(value: string): value is (typeof currencies)[number] {
+export function isValidCurrency(value: string): value is (typeof currencies)[number] {
 	return currencies.includes(value as any);
 }
 

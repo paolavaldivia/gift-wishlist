@@ -11,6 +11,14 @@
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let gifts = $state<Gift[]>(data.gifts as Gift[]);
+	
+	// Filter state
+	let filterMode = $state<'all' | 'available'>('all');
+	let filteredGifts = $derived(
+		filterMode === 'all' 
+			? gifts 
+			: gifts.filter(gift => !gift.isTaken)
+	);
 
 	// Modal state
 	let isModalOpen = $state(false);
@@ -76,13 +84,13 @@
 	}
 
 	function showErrorNotification(error: unknown) {
-		let message = 'Erreur lors de la réservation / Error during reservation / Error durante la reserva';
+		let message = m['errors.giftList.reservationFailed']();
 
 		if (error instanceof Error) {
 			if (error.message.includes('404')) {
-				message = 'Ce cadeau n\'existe plus / This gift no longer exists / Este regalo ya no existe';
+				message = m['errors.giftList.giftNotFound']();
 			} else if (error.message.includes('400') || error.message.includes('already')) {
-				message = 'Ce cadeau a déjà été réservé / This gift is already taken / Este regalo ya está reservado';
+				message = m['errors.giftList.alreadyTaken']();
 			}
 		}
 
@@ -94,6 +102,10 @@
 
 	function handleDonate() {
 		alert('La fonction de donation sera bientôt disponible! / Donation feature coming soon! / ¡Función de donación próximamente!');
+	}
+
+	function handleFilterChange(newMode: 'all' | 'available') {
+		filterMode = newMode;
 	}
 </script>
 
@@ -158,9 +170,27 @@
 	<section class="gift-section">
 		<h2>{m['giftList.title']()}</h2>
 		<p class="section-description">{m['giftList.description']()}</p>
+		
+		<!-- New filter controls -->
+		<div class="filter-controls">
+			<button 
+				class="filter-button" 
+				class:active={filterMode === 'all'} 
+				onclick={() => handleFilterChange('all')}
+			>
+				{m['giftList.showAll']()}
+			</button>
+			<button 
+				class="filter-button" 
+				class:active={filterMode === 'available'} 
+				onclick={() => handleFilterChange('available')}
+			>
+				{m['giftList.showAvailable']()}
+			</button>
+		</div>
 
 		<div class="gift-grid">
-			{#each gifts as gift (gift.id)}
+			{#each filteredGifts as gift (gift.id)}
 				<GiftCard
 					{gift}
 					onReserve={handleReserveClick}
@@ -186,7 +216,7 @@
     .container {
         max-width: var(--container-max-width);
         margin: 0 auto;
-        padding: var(--spacing-xl);
+        padding-inline: var(--spacing-xl);
     }
 
     .hero-container {
@@ -310,7 +340,7 @@
         text-align: center;
         color: var(--color-gray-600);
         font-size: var(--font-size-lg);
-        margin-bottom: var(--spacing-2xl);
+        margin-bottom: var(--spacing-xl);
         max-width: 600px;
         margin-left: auto;
         margin-right: auto;
@@ -388,9 +418,39 @@
         line-height: var(--line-height-normal);
     }
 
+    /* Filter controls styles */
+    .filter-controls {
+        display: flex;
+        justify-content: center;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-2xl);
+    }
+    
+    .filter-button {
+        background-color: var(--color-gray-200);
+        color: var(--color-gray-700);
+        border: none;
+        border-radius: var(--radius-full);
+        padding: var(--spacing-sm) var(--spacing-lg);
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+        cursor: pointer;
+        transition: all 0.2s ease;
+				margin-bottom: var(--spacing-l);
+    }
+    
+    .filter-button:hover {
+        background-color: var(--color-gray-300);
+    }
+    
+    .filter-button.active {
+        background-color: var(--color-primary);
+        color: white;
+    }
+    
     @media (max-width: 768px) {
         .container {
-            padding: var(--spacing-md);
+            padding-inline: var(--spacing-md);
         }
 
         .hero {
@@ -459,6 +519,10 @@
             right: var(--spacing-md);
             left: var(--spacing-md);
             max-width: none;
+        }
+
+        .filter-controls {
+            flex-wrap: wrap;
         }
     }
 </style>

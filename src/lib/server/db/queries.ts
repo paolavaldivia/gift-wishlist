@@ -1,5 +1,5 @@
 import { asc, desc, eq } from 'drizzle-orm';
-import type { Gift, NewBigGift, NewContributor, NewGift } from './schema';
+import type { Contributor, Gift, NewBigGift, NewContributor, NewGift } from './schema';
 import { bigGifts, contributors, gifts } from './schema';
 import type { PurchaseLink } from '$lib/types/gift';
 
@@ -243,8 +243,6 @@ function sanitizeContributor(contributor: typeof contributors.$inferSelect): San
 	};
 }
 
-function sanitizeContributors(
-	contributors: Array<typeof contributors.$inferSelect>
-): Array<SanitizedContributor> {
+function sanitizeContributors(contributors: Contributor[]): Array<SanitizedContributor> {
 	return contributors.map(sanitizeContributor);
 }

@@ -30,6 +30,10 @@
 		"title": "Cagnotte de naissance",
 		"description": "Vous nous connaissez, on a sûrement oublié d'acheter un million de choses. Aidez-nous à rester hors de prison en contribuant à notre cagnotte bébé !",
 		"button": "Participer à la cagnotte",
-		"amount": "Montant collecté"
+		"amount": "Montant collecté",
+		"bankTransfer": "Virement bancaire",
+		"accountHolder": "Titulaire du compte",
+		"paypalDescription": "Pour une contribution rapide et facile, utilisez PayPal :",
+		"paypalButton": "Donner avec PayPal"
 	}
 }

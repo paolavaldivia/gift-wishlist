@@ -28,12 +28,25 @@
     "hideMyName": "Hide my name on the list",
     "privacyNote": "Your name will not be displayed publicly if this option is checked",
     "anonymousReserver": "Someone (anonymous)",
-    "privacyEnabled": "This person chose to remain anonymous"
+    "privacyEnabled": "This person chose to remain anonymous",
+    "showAll": "Show all",
+    "showAvailable": "Show available"
   },
   "donation": {
     "title": "Baby Fund",
     "description": "You know us, surely we forgot to buy a million things. Help us stay out of jail by contributing to our baby fund!",
     "button": "Contribute to the fund",
-    "amount": "Amount collected"
+    "amount": "Amount collected",
+    "bankTransfer": "Bank Transfer",
+    "accountHolder": "Account Holder",
+    "paypalDescription": "For a quick and easy contribution, use PayPal:",
+    "paypalButton": "Donate with PayPal"
+  },
+  "errors": {
+    "giftList": {
+      "reservationFailed": "Error during reservation",
+      "giftNotFound": "Gift not found",
+      "alreadyTaken": "Gift is already taken"
+    }
   }
 }

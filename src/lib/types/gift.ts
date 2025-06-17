@@ -9,6 +9,8 @@ export interface Gift {
 	isTaken: boolean;
 	takenBy?: string | null;
 	hideReserverName?: boolean;
+	createdAt: Date;
+	updatedAt: Date;
 }
 
 export interface PurchaseLink {
