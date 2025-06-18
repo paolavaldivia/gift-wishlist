@@ -1,8 +1,8 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { giftsQueries } from '$lib/server/db/queries';
-import type { Gift } from '$lib/types/gift';
 import { handleApiError } from '$lib/server/utils';
+import type { NewGift } from '$lib/server/db/schema';
 
 export const GET: RequestHandler = async ({ params, locals }) => {
 	if (!locals.db) {
@@ -30,7 +30,7 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 	}
 
 	try {
-		const updates = (await request.json()) as Partial<Gift>;
+		const updates = (await request.json()) as Partial<NewGift>;
 		const updated = await giftsQueries.update(locals.db, params.id, updates);
 
 		if (!updated) {

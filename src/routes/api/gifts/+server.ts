@@ -1,9 +1,9 @@
 import { error, json } from '@sveltejs/kit';
-import { generateId, giftsQueries } from '$lib/server/db/queries';
+import { giftsQueries } from '$lib/server/db/queries';
 import type { RequestHandler } from './$types';
-import type { Gift } from '$lib/types/gift';
 import { handleApiError } from '$lib/server/utils';
-import { currencies } from '$lib/server/db/schema';
+
+export const prerender = false;
 
 export const GET: RequestHandler = async ({ locals, url }) => {
 	if (!locals.db) {
@@ -25,42 +25,30 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 				gifts = await giftsQueries.getAll(locals.db);
 		}
 
-		return json(gifts);
+		// Sanitize data for public consumption - remove sensitive admin info
+		const publicGifts = gifts.map((gift) => ({
+			id: gift.id,
+			name: gift.name,
+			description: gift.description,
+			imagePath: gift.imagePath,
+			approximatePrice: gift.approximatePrice,
+			currency: gift.currency,
+			purchaseLinks: gift.purchaseLinks,
+			isTaken: gift.isTaken,
+			// Only show reserver name if privacy is not enabled
+			takenBy: gift.isTaken && !gift.hideReserverName ? gift.takenBy : null,
+			isAnonymous: gift.isTaken && gift.hideReserverName,
+			createdAt: gift.createdAt,
+			updatedAt: gift.updatedAt
+		}));
+
+		return json({
+			gifts: publicGifts,
+			total: publicGifts.length,
+			available: publicGifts.filter((g) => !g.isTaken).length,
+			taken: publicGifts.filter((g) => g.isTaken).length
+		});
 	} catch (err) {
 		handleApiError(err, 'Failed to fetch gifts', 'GET /api/gifts');
-	}
-};
-
-function isValidCurrency(value: string): value is (typeof currencies)[number] {
-	return currencies.includes(value as unknown as (typeof currencies)[number]);
-}
-
-export const POST: RequestHandler = async ({ request, locals }) => {
-	if (!locals.db) {
-		throw error(500, 'Database not available');
-	}
-
-	try {
-		const giftData = (await request.json()) as Omit<Gift, 'id'>;
-
-		if (!isValidCurrency(giftData.currency)) {
-			throw error(400, 'Invalid currency');
-		}
-
-		// Add ID and timestamps
-		const newGift = {
-			id: generateId(),
-			...giftData,
-			currency: giftData.currency as (typeof currencies)[number],
-			isTaken: false,
-			takenBy: null,
-			createdAt: new Date(),
-			updatedAt: new Date()
-		};
-
-		const created = await giftsQueries.create(locals.db, newGift);
-		return json(created, { status: 201 });
-	} catch (err) {
-		handleApiError(err, 'Failed to create gift', 'POST /api/gifts');
 	}
 };

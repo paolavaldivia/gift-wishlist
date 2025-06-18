@@ -1,4 +1,3 @@
-// src/routes/admin/+layout.server.ts
 import type { LayoutServerLoad } from './$types';
 import { AuthService } from '$lib/server/auth';
 

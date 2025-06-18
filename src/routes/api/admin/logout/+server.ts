@@ -1,4 +1,3 @@
-// src/routes/api/admin/logout/+server.ts
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { AuthService } from '$lib/server/auth';
