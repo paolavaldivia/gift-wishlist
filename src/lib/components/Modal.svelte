@@ -23,12 +23,11 @@
 <svelte:window onkeydown={handleKeydown} />
 
 {#if show}
-    <div 
+    <dialog
         class="modal-backdrop"
         onclick={handleBackdropClick}
         onkeydown={handleKeydown}
         transition:fade={{ duration: 200 }}
-        role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
         tabindex="-1"
@@ -58,7 +57,7 @@
                 <slot></slot>
             </div>
         </div>
-    </div>
+    </dialog>
 {/if}
 
 <style>
@@ -74,6 +73,17 @@
         justify-content: center;
         z-index: var(--z-modal);
         padding: var(--spacing-lg);
+        border: none;
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+        max-width: none;
+        max-height: none;
+        overflow: hidden;
+    }
+
+    .modal-backdrop::backdrop {
+        background: transparent;
     }
 
     .modal-content {
