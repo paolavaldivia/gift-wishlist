@@ -466,13 +466,13 @@
     }
 
     .delete-btn {
-        background-color: var(--color-error-light);
-        color: var(--color-error);
+        background-color: var(--color-danger-light);
+        color: var(--color-gray-800);
     }
 
     .unreserve-btn {
         background-color: var(--color-warning-light);
-        color: var(--color-warning-dark);
+				color: var(--color-gray-800);
     }
 
     .edit-form-container {
@@ -674,7 +674,6 @@
         }
 
         .actions-cell {
-            display: flex;
             flex-direction: column;
             gap: var(--spacing-xs);
         }
