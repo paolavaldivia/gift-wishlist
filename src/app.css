@@ -10,11 +10,13 @@
 
     --color-accent: #8fbec0;
     --color-accent-dark: #318483;
+    --color-accent-darkest: #133a39;
     --color-accent-light: #e3eff0;
 
     --color-success: #9ED9B5; /* Pastel green */
   --color-warning: #FFD8A8; /* Soft peach */
     --color-danger: #FFABAB; /* Light coral */
+    --color-danger-light: #ffd6d6;
     --color-danger-dark: #FF9494;
 
     /* Neutral Colors - Softer earth tones */
@@ -101,6 +103,8 @@
 
     /* Grid & Layout */
     --grid-gap: var(--spacing-xl);
+
+    --button-height: var(--spacing-xl);
 }
 
 /* Global Styles */

@@ -58,49 +58,50 @@
         display: flex;
         flex-direction: column;
         min-height: 100vh;
-        background-color: var(--color-gray-50, #f9fafb);
+        background-color: var(--color-gray-50);
     }
 
     .admin-nav {
-        background-color: var(--color-gray-800, #1f2937);
-        color: white;
-        padding: 1rem 2rem;
+        background-color: var(--color-accent-darkest);
+        color: var(--color-white);
+        padding: var(--spacing-md) var(--spacing-xl);
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
 
     .admin-logo h1 {
-        font-size: 1.25rem;
+        font-size: var(--font-size-xl);
+        color: var(--color-accent-light);
         margin: 0;
     }
 
     .admin-user {
-        font-size: 0.875rem;
-        color: var(--color-gray-400, #9ca3af);
-        margin-left: 1rem;
+        font-size: var(--font-size-sm);
+        color: var(--color-accent-light);
+        margin-left: var(--spacing-md);
     }
 
     nav {
         display: flex;
-        gap: 2rem;
+        gap: var(--spacing-xl);
         align-items: center;
     }
 
     nav a {
-        color: var(--color-gray-300, #d1d5db);
+        color: var(--color-white);
         text-decoration: none;
-        padding: 0.5rem 0;
+        padding: var(--spacing-sm) 0;
         position: relative;
-        transition: color 0.2s;
+        transition: color var(--transition-fast);
     }
 
     nav a:hover {
-        color: white;
+        color: var(--color-accent-light);
     }
 
     nav a.active {
-        color: white;
+        color: var(--color-white);
     }
 
     nav a.active::after {
@@ -110,22 +111,22 @@
         left: 0;
         right: 0;
         height: 2px;
-        background-color: var(--color-primary, #3b82f6);
+        background-color: var(--color-primary);
     }
 
     .logout-button {
         background-color: transparent;
-        color: var(--color-gray-300, #d1d5db);
-        border: 1px solid var(--color-gray-600, #4b5563);
-        padding: 0.5rem 1rem;
-        border-radius: 0.25rem;
+        color: var(--color-white);
+        border: 1px solid var(--color-accent-light);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius-md);
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all var(--transition-fast);
     }
 
     .logout-button:hover {
-        background-color: var(--color-gray-700, #374151);
-        color: white;
+        background-color: var(--color-primary-dark);
+        color: var(--color-white);
     }
 
     .admin-content {
