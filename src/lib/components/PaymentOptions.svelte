@@ -28,21 +28,21 @@
                 <div class="rib-row">
                     <span class="rib-label">IBAN:</span>
                     <span class="rib-value">{iban}</span>
-                    <button class="copy-btn" on:click={copyIbanWithoutSpaces} title="Copy IBAN without spaces">
+                    <button class="copy-btn" onclick={copyIbanWithoutSpaces} title="Copy IBAN without spaces">
                         <CopyIcon />
                     </button>
                 </div>
                 <div class="rib-row">
                     <span class="rib-label">BIC:</span>
                     <span class="rib-value">{bic}</span>
-                    <button class="copy-btn" on:click={() => copyToClipboard(bic)} title="Copy BIC">
+                    <button class="copy-btn" onclick={() => copyToClipboard(bic)} title="Copy BIC">
                         <CopyIcon />
                     </button>
                 </div>
                 <div class="rib-row">
                     <span class="rib-label">{m['donation.accountHolder']()}:</span>
                     <span class="rib-value">{accountHolder}</span>
-                    <button class="copy-btn" on:click={() => copyToClipboard(accountHolder)} title="Copy account holder name">
+                    <button class="copy-btn" onclick={() => copyToClipboard(accountHolder)} title="Copy account holder name">
                         <CopyIcon />
                     </button>
                 </div>

@@ -1,3 +1,6 @@
+export const currencies = ['EUR', 'USD', 'PEN'] as const;
+export type Currency = (typeof currencies)[number];
+
 export interface Gift {
 	id: string;
 	name: string;

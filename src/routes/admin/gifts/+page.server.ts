@@ -1,9 +1,12 @@
 import { type Cookies, fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { generateId, giftsQueries } from '$lib/server/db/queries';
-import { isValidCurrency } from '../../api/gifts/+server';
-import type { Gift } from '$lib/types/gift';
+import { currencies, type Currency, type Gift } from '$lib/types/gift';
 import { AuthService } from '$lib/server/auth';
+
+function isValidCurrency(currency: unknown): currency is Currency {
+	return typeof currency === 'string' && currencies.includes(currency as Currency);
+}
 
 // Enhanced admin authentication check
 function checkAdminAuth(cookies: Cookies): void {
@@ -55,7 +58,7 @@ export const actions: Actions = {
 		for (let i = 0; i < formEntries.length; i++) {
 			const [key, value] = formEntries[i];
 			if (key.startsWith('purchaseLinks[') && key.endsWith('].siteName')) {
-				const index = key.match(/\[(\d+)\]/)?.[1];
+				const index = key.match(/\[(\d+)]/)?.[1];
 				if (index) {
 					const urlKey = `purchaseLinks[${index}].url`;
 					const url = formData.get(urlKey)?.toString();
@@ -121,7 +124,7 @@ export const actions: Actions = {
 		for (let i = 0; i < formEntries.length; i++) {
 			const [key, value] = formEntries[i];
 			if (key.startsWith('purchaseLinks[') && key.endsWith('].siteName')) {
-				const index = key.match(/\[(\d+)\]/)?.[1];
+				const index = key.match(/\[(\d+)]/)?.[1];
 				if (index) {
 					const urlKey = `purchaseLinks[${index}].url`;
 					const url = formData.get(urlKey)?.toString();

@@ -18,7 +18,7 @@
 		<h2>{m['donation.title']()}</h2>
 		<p class="description">{m['donation.description']()}</p>
 
-		<button class="btn btn-primary donate-button" on:click={togglePaymentOptions}>
+		<button class="btn btn-primary donate-button" onclick={togglePaymentOptions}>
 			{m['donation.button']()}
 		</button>
 

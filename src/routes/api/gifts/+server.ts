@@ -31,9 +31,8 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 	}
 };
 
-// Replace the currencies.includes check with a type guard
-export function isValidCurrency(value: string): value is (typeof currencies)[number] {
-	return currencies.includes(value as any);
+function isValidCurrency(value: string): value is (typeof currencies)[number] {
+	return currencies.includes(value as unknown as (typeof currencies)[number]);
 }
 
 export const POST: RequestHandler = async ({ request, locals }) => {
