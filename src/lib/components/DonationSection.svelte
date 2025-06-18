@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as m from '$lib/paraglide/messages';
-	import PaymentOptions from './PaymentOptions.svelte';
+	import PaymentOptionsModalModal from './PaymentOptionsModal.svelte';
 
 	let showPaymentOptions = $state(false);
 
@@ -14,17 +14,6 @@
 </script>
 
 <section class="donation-section gradient-subtle">
-	<div class="donation-content">
-		<h2>{m['donation.title']()}</h2>
-		<p class="description">{m['donation.description']()}</p>
-
-		<button class="btn btn-primary donate-button" onclick={togglePaymentOptions}>
-			{m['donation.button']()}
-		</button>
-
-		<PaymentOptions show={showPaymentOptions} onClose={closePaymentOptions} />
-	</div>
-
 	<div class="illustration">
 		<div class="baby-icon">👶</div>
 		<div class="floating-items">
@@ -34,6 +23,18 @@
 			<span class="item" style="--delay: 1.5s">🎁</span>
 		</div>
 	</div>
+	<div class="donation-content">
+		<h2>{m['donation.title']()}</h2>
+		<p class="description">{m['donation.description']()}</p>
+
+		<button class="btn btn-primary donate-button" onclick={togglePaymentOptions}>
+			{m['donation.button']()}
+		</button>
+
+		<PaymentOptionsModalModal show={showPaymentOptions} onClose={closePaymentOptions} />
+	</div>
+
+
 </section>
 
 <style>

@@ -24,7 +24,9 @@
 		"hideMyName": "Masquer mon nom sur la liste",
 		"privacyNote": "Votre nom ne sera pas affiché publiquement si cette option est cochée",
 		"anonymousReserver": "Quelqu'un (anonyme)",
-		"privacyEnabled": "Cette personne a choisi de rester anonyme"
+		"privacyEnabled": "Cette personne a choisi de rester anonyme",
+		"showAll": "Afficher tout",
+		"showAvailable": "Afficher disponibles"
 	},
 	"donation": {
 		"title": "Cagnotte de naissance",

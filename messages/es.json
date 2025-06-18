@@ -24,7 +24,9 @@
 		"hideMyName": "Ocultar mi nombre en la lista",
 		"privacyNote": "Tu nombre no se mostrará públicamente si esta opción está marcada",
 		"anonymousReserver": "Alguien (anónimo)",
-		"privacyEnabled": "Esta persona eligió permanecer anónima"
+		"privacyEnabled": "Esta persona eligió permanecer anónima",
+		"showAll": "Mostrar todos",
+		"showAvailable": "Mostrar disponibles"
 	},
 	"donation": {
 		"title": "Fondo para bebecite",

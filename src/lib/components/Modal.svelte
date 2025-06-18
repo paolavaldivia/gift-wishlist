@@ -72,6 +72,7 @@
         align-items: center;
         justify-content: center;
         z-index: var(--z-modal);
+        isolation: isolate;
         padding: var(--spacing-lg);
         border: none;
         margin: 0;
