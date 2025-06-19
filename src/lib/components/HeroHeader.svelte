@@ -25,7 +25,7 @@
 
         <!-- Placeholder for the belly photo -->
         <div class="hero-image">
-            <img src="https://picsum.photos/600/400?random=2" alt="Céline's Belly" />
+            <img src="/moni-belly.jpg" alt="Céline's Belly" />
         </div>
     </div>
 </header>
@@ -99,7 +99,7 @@
     }
 
     .hero-image {
-        max-width: 400px;
+        max-width: 450px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -186,6 +186,10 @@
             order: 1;
         }
 
+        .hero-content-container {
+            padding-left: 0;
+        }
+
         .hero h1 {
             font-size: var(--font-size-3xl);
         }
@@ -195,7 +199,7 @@
         }
 
         .hero-image {
-            max-width: min(300px, 80%);
+            max-width: min(400px, 90%);
             min-height: 200px;
             margin-top: var(--spacing-lg);
             margin-bottom: var(--spacing-md);
