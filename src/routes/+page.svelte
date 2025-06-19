@@ -11,12 +11,12 @@
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let gifts = $state<Gift[]>(data.gifts as Gift[]);
-	
+
 	// Filter state
 	let filterMode = $state<'all' | 'available'>('all');
 	let filteredGifts = $derived(
-		filterMode === 'all' 
-			? gifts 
+		filterMode === 'all'
+			? gifts
 			: gifts.filter(gift => !gift.isTaken)
 	);
 
@@ -30,24 +30,30 @@
 		message: ''
 	});
 
-	// Simple flag to prevent reprocessing the same form result
-	let isProcessingForm = $state(false);
+	// Track the last processed form result
+	let lastFormResult = $state<string | null>(null);
 
 	// Update gifts when form action completes
 	$effect(() => {
-		if (form && 'success' in form && !isProcessingForm) {
-			isProcessingForm = true;
+		if (form && 'success' in form) {
+			// Create a unique identifier for this form result
+			const formId = `${form.success}-${form.gift?.id || 'none'}-${Date.now()}`;
 
-			if (form.success && form.gift) {
-				// Update gifts array with the new data
-				gifts = gifts.map(g =>
-					g.id === form.gift.id ? form.gift : g
-				);
-			} else if (!form.success) {
-				showErrorNotification(new Error(form.message || 'Unknown error'));
-				isModalOpen = false;
-				selectedGift = null;
-				isProcessingForm = false;
+			// Only process if this is a new result
+			if (formId !== lastFormResult) {
+				lastFormResult = formId;
+
+				if (form.success && form.gift) {
+					// Update gifts array with the new data
+					gifts = gifts.map(g =>
+						g.id === form.gift.id ? form.gift : g
+					);
+				} else if (!form.success) {
+					showErrorNotification(new Error(form.message || 'Unknown error'));
+					// Close modal on error
+					isModalOpen = false;
+					selectedGift = null;
+				}
 			}
 		}
 	});
@@ -140,19 +146,19 @@
 	<section class="gift-section">
 		<h2>{m['giftList.title']()}</h2>
 		<p class="section-description">{m['giftList.description']()}</p>
-		
+
 		<!-- Filter controls -->
 		<div class="filter-controls">
-			<button 
-				class="filter-button" 
-				class:active={filterMode === 'all'} 
+			<button
+				class="filter-button"
+				class:active={filterMode === 'all'}
 				onclick={() => handleFilterChange('all')}
 			>
 				{m['giftList.showAll']()}
 			</button>
-			<button 
-				class="filter-button" 
-				class:active={filterMode === 'available'} 
+			<button
+				class="filter-button"
+				class:active={filterMode === 'available'}
 				onclick={() => handleFilterChange('available')}
 			>
 				{m['giftList.showAvailable']()}
@@ -256,7 +262,7 @@
         gap: var(--spacing-md);
         margin-bottom: var(--spacing-2xl);
     }
-    
+
     .filter-button {
         background-color: var(--color-gray-200);
         color: var(--color-gray-700);
@@ -269,11 +275,11 @@
         transition: all 0.2s ease;
         margin-bottom: var(--spacing-l);
     }
-    
+
     .filter-button:hover {
         background-color: var(--color-gray-300);
     }
-    
+
     .filter-button.active {
         background-color: var(--color-primary);
         color: white;
