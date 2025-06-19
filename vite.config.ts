@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => ({
 		})
 	],
 	test: {
+		pool: 'forks',
 		projects: [
 			{
 				extends: './vite.config.ts',

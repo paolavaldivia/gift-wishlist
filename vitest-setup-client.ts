@@ -15,4 +15,5 @@ Object.defineProperty(window, 'matchMedia', {
 	}))
 });
 
-// add more mocks here if you need them
+// Reset modules at the end of setup
+vi.resetModules();
