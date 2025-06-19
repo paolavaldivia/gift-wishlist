@@ -1,14 +1,9 @@
-import { type Cookies, fail, redirect } from '@sveltejs/kit';
+import { type Cookies, error, fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { generateId, giftsQueries } from '$lib/server/db/queries';
-import { currencies, type Currency, type Gift } from '$lib/types/gift';
-import { AuthService } from '$lib/server/auth';
+import { AuthService } from '$lib/server/auth.js';
+import { currencies, type Currency } from '$lib/types/gift';
+import { giftRepository } from '$lib/server/db/gift-repository';
 
-function isValidCurrency(currency: unknown): currency is Currency {
-	return typeof currency === 'string' && currencies.includes(currency as Currency);
-}
-
-// Enhanced admin authentication check
 function checkAdminAuth(cookies: Cookies): void {
 	const sessionToken = cookies.get('admin_session');
 
@@ -25,62 +20,91 @@ function checkAdminAuth(cookies: Cookies): void {
 	}
 }
 
+function isValidCurrency(currency: unknown): currency is Currency {
+	return typeof currency === 'string' && currencies.includes(currency as Currency);
+}
+
 export const load: PageServerLoad = async ({ cookies, locals }) => {
-	// Validate admin authentication
 	checkAdminAuth(cookies);
 
+	if (!locals.db) {
+		throw error(500, 'Database not available');
+	}
+
 	try {
-		const allGifts = (await giftsQueries.getAll(locals.db)) as Gift[];
-		return { gifts: allGifts };
-	} catch (error) {
-		console.error('Error loading gifts:', error);
-		return { gifts: [] };
+		const gifts = await giftRepository.findAllAdmin(locals.db);
+
+		return {
+			gifts,
+			stats: {
+				total: gifts.length,
+				available: gifts.filter((g) => !g.isTaken).length,
+				taken: gifts.filter((g) => g.isTaken).length
+			}
+		};
+	} catch (err) {
+		console.error('Error loading admin gifts:', err);
+		throw error(500, 'Failed to load gifts');
 	}
 };
 
 export const actions: Actions = {
-	// Create a new gift
 	createGift: async ({ request, cookies, locals }) => {
 		checkAdminAuth(cookies);
 
-		const formData = await request.formData();
-		const name = formData.get('name')?.toString();
-		const description = formData.get('description')?.toString();
-		const imagePath = formData.get('imagePath')?.toString();
-		const approximatePrice = parseFloat(formData.get('approximatePrice')?.toString() || '0');
-		const rawCurrency = formData.get('currency')?.toString() || 'EUR';
-		const currency = isValidCurrency(rawCurrency) ? rawCurrency : 'EUR';
-
-		// Parse purchase links from form data
-		const purchaseLinks = [];
-		const formEntries = [...formData.entries()];
-
-		for (let i = 0; i < formEntries.length; i++) {
-			const [key, value] = formEntries[i];
-			if (key.startsWith('purchaseLinks[') && key.endsWith('].siteName')) {
-				const index = key.match(/\[(\d+)]/)?.[1];
-				if (index) {
-					const urlKey = `purchaseLinks[${index}].url`;
-					const url = formData.get(urlKey)?.toString();
-					if (url) {
-						purchaseLinks.push({
-							siteName: value.toString(),
-							url
-						});
-					}
-				}
-			}
-		}
-
-		// Validate required fields
-		if (!name || !description || !imagePath) {
-			return fail(400, { message: 'All required fields must be filled' });
+		if (!locals.db) {
+			return fail(500, {
+				success: false,
+				message: 'Database not available'
+			});
 		}
 
 		try {
-			// Create new gift using giftsQueries
-			await giftsQueries.create(locals.db, {
-				id: generateId(),
+			const formData = await request.formData();
+
+			const name = formData.get('name')?.toString();
+			const description = formData.get('description')?.toString();
+			const imagePath = formData.get('imagePath')?.toString();
+			const approximatePrice = parseFloat(formData.get('approximatePrice')?.toString() || '0');
+			const rawCurrency = formData.get('currency')?.toString() || 'EUR';
+			const currency = isValidCurrency(rawCurrency) ? rawCurrency : 'EUR';
+
+			const purchaseLinks = [];
+			const formEntries = [...formData.entries()];
+
+			for (let i = 0; i < formEntries.length; i++) {
+				const [key, value] = formEntries[i];
+				if (key.startsWith('purchaseLinks[') && key.endsWith('].siteName')) {
+					const index = key.match(/\[(\d+)]/)?.[1];
+					if (index) {
+						const urlKey = `purchaseLinks[${index}].url`;
+						const url = formData.get(urlKey)?.toString();
+						if (url) {
+							purchaseLinks.push({
+								siteName: value.toString(),
+								url
+							});
+						}
+					}
+				}
+			}
+
+			// Basic validation
+			if (!name || !description || !imagePath) {
+				return fail(400, {
+					success: false,
+					message: 'Name, description, and image path are required'
+				});
+			}
+
+			if (approximatePrice <= 0) {
+				return fail(400, {
+					success: false,
+					message: 'Price must be greater than 0'
+				});
+			}
+
+			const giftData = {
 				name,
 				description,
 				imagePath,
@@ -89,129 +113,196 @@ export const actions: Actions = {
 				purchaseLinks,
 				isTaken: false,
 				takenBy: null,
-				hideReserverName: false,
-				createdAt: new Date(),
-				updatedAt: new Date()
+				hideReserverName: false
+			};
+
+			const createdGift = await giftRepository.createAdmin(locals.db, giftData);
+
+			return {
+				success: true,
+				gift: createdGift,
+				message: `Gift "${createdGift.name}" created successfully`
+			};
+		} catch (err) {
+			console.error('Failed to create gift:', err);
+			return fail(500, {
+				success: false,
+				message: 'Failed to create gift'
 			});
-
-			// Get all gifts to return updated list
-			const allGifts = (await giftsQueries.getAll(locals.db)) as Gift[];
-
-			return { gifts: allGifts };
-		} catch (error) {
-			console.error('Error creating gift:', error);
-			return fail(500, { message: 'Failed to create gift' });
 		}
 	},
 
-	// Update an existing gift
 	updateGift: async ({ request, cookies, locals }) => {
 		checkAdminAuth(cookies);
 
-		const formData = await request.formData();
-		const id = formData.get('id')?.toString();
-		const name = formData.get('name')?.toString();
-		const description = formData.get('description')?.toString();
-		const imagePath = formData.get('imagePath')?.toString();
-		const approximatePrice = parseFloat(formData.get('approximatePrice')?.toString() || '0');
-		const rawCurrency = formData.get('currency')?.toString() || 'EUR';
-		const currency = isValidCurrency(rawCurrency) ? rawCurrency : 'EUR';
-
-		// Parse purchase links from form data
-		const purchaseLinks = [];
-		const formEntries = [...formData.entries()];
-
-		for (let i = 0; i < formEntries.length; i++) {
-			const [key, value] = formEntries[i];
-			if (key.startsWith('purchaseLinks[') && key.endsWith('].siteName')) {
-				const index = key.match(/\[(\d+)]/)?.[1];
-				if (index) {
-					const urlKey = `purchaseLinks[${index}].url`;
-					const url = formData.get(urlKey)?.toString();
-					if (url) {
-						purchaseLinks.push({
-							siteName: value.toString(),
-							url
-						});
-					}
-				}
-			}
-		}
-
-		// Validate required fields
-		if (!id || !name || !description || !imagePath) {
-			return fail(400, { message: 'All required fields must be filled' });
+		if (!locals.db) {
+			return fail(500, {
+				success: false,
+				message: 'Database not available'
+			});
 		}
 
 		try {
-			// Update gift using giftsQueries
-			await giftsQueries.update(locals.db, id, {
+			const formData = await request.formData();
+			const id = formData.get('id')?.toString();
+			const name = formData.get('name')?.toString();
+			const description = formData.get('description')?.toString();
+			const imagePath = formData.get('imagePath')?.toString();
+			const approximatePrice = parseFloat(formData.get('approximatePrice')?.toString() || '0');
+			const rawCurrency = formData.get('currency')?.toString() || 'EUR';
+			const currency = isValidCurrency(rawCurrency) ? rawCurrency : 'EUR';
+
+			const purchaseLinks = [];
+			const formEntries = [...formData.entries()];
+
+			for (let i = 0; i < formEntries.length; i++) {
+				const [key, value] = formEntries[i];
+				if (key.startsWith('purchaseLinks[') && key.endsWith('].siteName')) {
+					const index = key.match(/\[(\d+)]/)?.[1];
+					if (index) {
+						const urlKey = `purchaseLinks[${index}].url`;
+						const url = formData.get(urlKey)?.toString();
+						if (url) {
+							purchaseLinks.push({
+								siteName: value.toString(),
+								url
+							});
+						}
+					}
+				}
+			}
+
+			if (!id) {
+				return fail(400, {
+					success: false,
+					message: 'Gift ID is required'
+				});
+			}
+
+			if (!name || !description || !imagePath) {
+				return fail(400, {
+					success: false,
+					message: 'Name, description, and image path are required'
+				});
+			}
+
+			const updateData = {
 				name,
 				description,
 				imagePath,
 				approximatePrice,
 				currency,
-				purchaseLinks,
-				updatedAt: new Date()
+				purchaseLinks
+			};
+
+			const updatedGift = await giftRepository.updateAdmin(locals.db, id, updateData);
+
+			if (!updatedGift) {
+				return fail(404, {
+					success: false,
+					message: 'Gift not found'
+				});
+			}
+
+			return {
+				success: true,
+				gift: updatedGift,
+				message: `Gift "${updatedGift.name}" updated successfully`
+			};
+		} catch (err) {
+			console.error('Failed to update gift:', err);
+			return fail(500, {
+				success: false,
+				message: 'Failed to update gift'
 			});
-
-			// Get all gifts to return updated list
-			const allGifts = (await giftsQueries.getAll(locals.db)) as Gift[];
-
-			return { gifts: allGifts };
-		} catch (error) {
-			console.error('Error updating gift:', error);
-			return fail(500, { message: 'Failed to update gift' });
 		}
 	},
 
-	// Delete a gift
 	deleteGift: async ({ request, cookies, locals }) => {
 		checkAdminAuth(cookies);
 
-		const formData = await request.formData();
-		const id = formData.get('id')?.toString();
-
-		if (!id) {
-			return fail(400, { message: 'Gift ID is required' });
+		if (!locals.db) {
+			return fail(500, {
+				success: false,
+				message: 'Database not available'
+			});
 		}
 
 		try {
-			// Delete gift using giftsQueries
-			await giftsQueries.delete(locals.db, id);
+			const formData = await request.formData();
+			const giftId = formData.get('id')?.toString();
 
-			// Get all gifts to return updated list
-			const allGifts = (await giftsQueries.getAll(locals.db)) as Gift[];
+			if (!giftId) {
+				return fail(400, {
+					success: false,
+					message: 'Gift ID is required'
+				});
+			}
 
-			return { gifts: allGifts };
-		} catch (error) {
-			console.error('Error deleting gift:', error);
-			return fail(500, { message: 'Failed to delete gift' });
+			const existingGift = await giftRepository.findByIdAdmin(locals.db, giftId);
+			if (!existingGift) {
+				return fail(404, {
+					success: false,
+					message: 'Gift not found'
+				});
+			}
+
+			await giftRepository.delete(locals.db, giftId);
+
+			return {
+				success: true,
+				message: `Gift "${existingGift.name}" deleted successfully`
+			};
+		} catch (err) {
+			console.error('Failed to delete gift:', err);
+			return fail(500, {
+				success: false,
+				message: 'Failed to delete gift'
+			});
 		}
 	},
 
-	// Unreserve a gift
 	unreserveGift: async ({ request, cookies, locals }) => {
 		checkAdminAuth(cookies);
 
-		const formData = await request.formData();
-		const id = formData.get('id')?.toString();
-
-		if (!id) {
-			return fail(400, { message: 'Gift ID is required' });
+		if (!locals.db) {
+			return fail(500, {
+				success: false,
+				message: 'Database not available'
+			});
 		}
 
 		try {
-			// Unreserve gift using giftsQueries
-			await giftsQueries.unreserve(locals.db, id);
+			const formData = await request.formData();
+			const giftId = formData.get('id')?.toString();
 
-			// Get all gifts to return updated list
-			const allGifts = (await giftsQueries.getAll(locals.db)) as Gift[];
+			if (!giftId) {
+				return fail(400, {
+					success: false,
+					message: 'Gift ID is required'
+				});
+			}
 
-			return { gifts: allGifts };
-		} catch (error) {
-			console.error('Error unreserving gift:', error);
-			return fail(500, { message: 'Failed to unreserve gift' });
+			const unreservedGift = await giftRepository.unreserve(locals.db, giftId);
+
+			if (!unreservedGift) {
+				return fail(404, {
+					success: false,
+					message: 'Gift not found'
+				});
+			}
+
+			return {
+				success: true,
+				gift: unreservedGift,
+				message: `Gift "${unreservedGift.name}" unreserved successfully`
+			};
+		} catch (err) {
+			console.error('Failed to unreserve gift:', err);
+			return fail(500, {
+				success: false,
+				message: 'Failed to unreserve gift'
+			});
 		}
 	}
 };

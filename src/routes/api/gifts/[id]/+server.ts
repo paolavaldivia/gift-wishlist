@@ -1,8 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { giftsQueries } from '$lib/server/db/queries';
-import { handleApiError } from '$lib/server/utils';
-import type { NewGift } from '$lib/server/db/schema';
+import { giftRepository } from '$lib/server/db/gift-repository.js';
 
 export const GET: RequestHandler = async ({ params, locals }) => {
 	if (!locals.db) {
@@ -10,7 +8,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	}
 
 	try {
-		const gift = await giftsQueries.getById(locals.db, params.id);
+		const gift = await giftRepository.findById(locals.db, params.id);
 
 		if (!gift) {
 			throw error(404, 'Gift not found');
@@ -24,34 +22,66 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	}
 };
 
-export const PUT: RequestHandler = async ({ params, request, locals }) => {
+// Simplified PATCH endpoint - only for reservations (no unreserve)
+export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 	if (!locals.db) {
 		throw error(500, 'Database not available');
 	}
 
 	try {
-		const updates = (await request.json()) as Partial<NewGift>;
-		const updated = await giftsQueries.update(locals.db, params.id, updates);
+		// Type the request body properly to fix TS error
+		const requestBody = (await request.json()) as {
+			action?: string;
+			name?: string;
+			hideReserverName?: boolean;
+		};
 
-		if (!updated) {
+		const { action, name, hideReserverName = false } = requestBody;
+
+		// Only allow 'reserve' action
+		if (action !== 'reserve') {
+			throw error(
+				400,
+				'Only "reserve" action is allowed. Use /api/gifts/[id]/reserve for reservations.'
+			);
+		}
+
+		if (!name || typeof name !== 'string' || name.trim().length === 0) {
+			throw error(400, 'Valid name is required for reservation');
+		}
+
+		if (name.trim().length > 100) {
+			throw error(400, 'Name is too long (max 100 characters)');
+		}
+
+		// Check if already taken - findById returns PublicGift
+		const existingGift = await giftRepository.findById(locals.db, params.id);
+		if (!existingGift) {
+			throw error(404, 'Gift not found');
+		}
+		if (existingGift.isTaken) {
+			throw error(409, 'Gift is already reserved');
+		}
+
+		// Reserve the gift - returns PublicGift with privacy applied
+		const reserved = await giftRepository.reserve(
+			locals.db,
+			params.id,
+			name.trim(),
+			hideReserverName
+		);
+		if (!reserved) {
 			throw error(404, 'Gift not found');
 		}
 
-		return json(updated);
+		return json({
+			success: true,
+			gift: reserved,
+			message: `Successfully reserved "${reserved.name}"`
+		});
 	} catch (err) {
-		handleApiError(err, 'Failed to update gift', 'PUT /api/gifts/[id]');
-	}
-};
-
-export const DELETE: RequestHandler = async ({ params, locals }) => {
-	if (!locals.db) {
-		throw error(500, 'Database not available');
-	}
-
-	try {
-		await giftsQueries.delete(locals.db, params.id);
-		return new Response(null, { status: 204 });
-	} catch (err) {
-		handleApiError(err, 'Failed to delete gift', 'DELETE /api/gifts/[id]');
+		if (err && typeof err === 'object' && 'status' in err) throw err;
+		console.error('Failed to reserve gift:', err);
+		throw error(500, 'Failed to reserve gift');
 	}
 };

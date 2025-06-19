@@ -1,5 +1,5 @@
 import type { Actions, PageServerLoad } from './$types';
-import { giftsQueries } from '$lib/server/db/queries';
+import { giftRepository } from '$lib/server/db/gift-repository'; // NEW: Use repository
 import { error, fail } from '@sveltejs/kit';
 import { building } from '$app/environment';
 
@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	try {
 		return {
-			gifts: await giftsQueries.getAll(locals.db)
+			gifts: await giftRepository.findAll(locals.db)
 		};
 	} catch (err) {
 		console.error('Failed to load gifts:', err);
@@ -37,7 +37,6 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const giftId = formData.get('giftId')?.toString();
 		const name = formData.get('name')?.toString();
-		// NEW: Get privacy preference from form
 		const hideReserverName = formData.get('hideReserverName') === 'true';
 
 		if (!giftId || !name) {
@@ -49,7 +48,7 @@ export const actions: Actions = {
 
 		try {
 			// Check if gift is already taken
-			const existingGift = await giftsQueries.getById(locals.db, giftId);
+			const existingGift = await giftRepository.findById(locals.db, giftId);
 			if (!existingGift) {
 				return fail(404, {
 					success: false,
@@ -65,7 +64,7 @@ export const actions: Actions = {
 			}
 
 			// Reserve the gift with privacy preference
-			const reserved = await giftsQueries.reserve(locals.db, giftId, name, hideReserverName);
+			const reserved = await giftRepository.reserve(locals.db, giftId, name, hideReserverName);
 
 			if (!reserved) {
 				return fail(404, {
@@ -74,7 +73,6 @@ export const actions: Actions = {
 				});
 			}
 
-			// Make sure to explicitly return success: true
 			return {
 				success: true,
 				gift: reserved,

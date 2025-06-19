@@ -1,16 +1,13 @@
 import { error, json } from '@sveltejs/kit';
-import { generateId, giftsQueries } from '$lib/server/db/queries';
+import { type Gift, giftRepository } from '$lib/server/db/gift-repository.js';
 import type { RequestHandler } from './$types';
-import type { Gift } from '$lib/types/gift';
 import { handleApiError } from '$lib/server/utils';
-import { currencies } from '$lib/server/db/schema';
-import { requireAdmin } from '$lib/server/api-auth';
+import { currencies } from '$lib/server/db/schema.js';
+import { requireAdmin } from '$lib/server/api-auth.js';
 
 export const prerender = false;
 
-// Admin-only endpoint to get all gifts with full details
 export const GET: RequestHandler = async (event) => {
-	// Require admin authentication
 	const adminContext = requireAdmin(event);
 
 	const { locals, url } = event;
@@ -23,29 +20,35 @@ export const GET: RequestHandler = async (event) => {
 		const filter = url.searchParams.get('filter');
 		const includePrivate = url.searchParams.get('includePrivate') === 'true';
 
-		let gifts;
+		let gifts: Gift[];
 		switch (filter) {
-			case 'available':
-				gifts = await giftsQueries.getAvailable(locals.db);
+			case 'available': {
+				const allGifts = await giftRepository.findAllAdmin(locals.db);
+				gifts = allGifts.filter((g) => !g.isTaken);
 				break;
-			case 'taken':
-				gifts = await giftsQueries.getTaken(locals.db);
+			}
+			case 'taken': {
+				const allGiftsTaken = await giftRepository.findAllAdmin(locals.db);
+				gifts = allGiftsTaken.filter((g) => g.isTaken);
 				break;
+			}
 			default:
-				gifts = await giftsQueries.getAll(locals.db);
+				gifts = await giftRepository.findAllAdmin(locals.db);
 		}
 
-		// For admin, optionally include private information
-		if (includePrivate) {
-			// Admin can see actual reserver names even if hidden
-			gifts = gifts.map((gift) => ({
-				...gift,
-				actualReserverName: gift.isTaken ? gift.takenBy : null
-			}));
-		}
+		const responseGifts = includePrivate
+			? gifts.map((gift) => ({
+					...gift,
+					actualReserverName: gift.isTaken ? gift.takenBy : null,
+					adminNotes: `Privacy: ${gift.hideReserverName ? 'Hidden' : 'Public'}`
+				}))
+			: gifts;
 
 		return json({
-			gifts,
+			gifts: responseGifts,
+			total: gifts.length,
+			available: gifts.filter((g) => !g.isTaken).length,
+			taken: gifts.filter((g) => g.isTaken).length,
 			requestedBy: adminContext.userId,
 			timestamp: new Date().toISOString()
 		});
@@ -70,25 +73,44 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	try {
-		const giftData = (await request.json()) as Omit<Gift, 'id'>;
+		// Note: You might want to define a proper CreateGiftRequest interface
+		const giftData = (await request.json()) as {
+			name: string;
+			description: string;
+			imagePath: string;
+			approximatePrice: number;
+			currency: string;
+			purchaseLinks?: Array<{ siteName: string; url: string }>;
+		};
+
+		// Basic validation
+		if (!giftData.name || !giftData.description || !giftData.imagePath) {
+			throw error(400, 'Name, description, and image path are required');
+		}
 
 		if (!isValidCurrency(giftData.currency)) {
 			throw error(400, 'Invalid currency');
 		}
 
-		// Add ID and timestamps
-		const newGift = {
-			id: generateId(),
-			...giftData,
+		if (giftData.approximatePrice <= 0) {
+			throw error(400, 'Price must be greater than 0');
+		}
+
+		// Prepare gift data for creation
+		const newGiftData = {
+			name: giftData.name,
+			description: giftData.description,
+			imagePath: giftData.imagePath,
+			approximatePrice: giftData.approximatePrice,
 			currency: giftData.currency as (typeof currencies)[number],
+			purchaseLinks: giftData.purchaseLinks || [],
 			isTaken: false,
 			takenBy: null,
-			hideReserverName: false,
-			createdAt: new Date(),
-			updatedAt: new Date()
+			hideReserverName: false
 		};
 
-		const created = await giftsQueries.create(locals.db, newGift);
+		// Use createAdmin to get full Gift object back
+		const created = await giftRepository.createAdmin(locals.db, newGiftData);
 
 		return json(
 			{

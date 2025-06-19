@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
-import { bigGiftsQueries, generateId } from '$lib/server/db/queries';
+import { bigGiftsQueries, generateId } from '$lib/server/db/gift-repository';
 import type { Contributor } from '$lib/types/gift';
 
 export const POST: RequestHandler = async ({ params, request, locals }) => {

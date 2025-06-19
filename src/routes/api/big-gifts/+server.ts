@@ -1,6 +1,6 @@
 import type { RequestHandler } from '../../../../.svelte-kit/types/src/routes/api/gifts/$types';
 import { error, json } from '@sveltejs/kit';
-import { bigGiftsQueries, generateId } from '$lib/server/db/queries';
+import { bigGiftsQueries, generateId } from '$lib/server/db/gift-repository';
 import type { BigGift } from '$lib/types/gift';
 import { handleApiError } from '$lib/server/utils';
 
