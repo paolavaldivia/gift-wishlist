@@ -1,7 +1,7 @@
 import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
-import { bigGiftsQueries, generateId } from '$lib/server/db/gift-repository';
 import type { Contributor } from '$lib/types/gift';
+import { bigGiftRepository } from '$lib/server/db/big-gift-repository';
 
 export const POST: RequestHandler = async ({ params, request, locals }) => {
 	if (!locals.db) {
@@ -12,14 +12,11 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		const contributionData = (await request.json()) as Omit<Contributor, 'id' | 'bigGiftId'>;
 
 		const newContribution = {
-			id: generateId(),
 			bigGiftId: params.id,
-			...contributionData,
-			createdAt: new Date(),
-			updatedAt: new Date()
+			...contributionData
 		};
 
-		const created = await bigGiftsQueries.addContribution(locals.db, newContribution);
+		const created = await bigGiftRepository.addContribution(locals.db, newContribution);
 		return json(created, { status: 201 });
 	} catch (err) {
 		console.error('Failed to add contribution:', err);

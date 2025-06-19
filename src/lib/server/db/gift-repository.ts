@@ -1,4 +1,3 @@
-// src/lib/server/db/gift-repository.ts
 import { asc, desc, eq } from 'drizzle-orm';
 import type { Gift as DbGift, NewGift } from './schema.js';
 import { gifts } from './schema.js';

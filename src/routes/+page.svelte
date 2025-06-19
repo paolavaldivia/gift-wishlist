@@ -178,7 +178,6 @@
 	<DonationSection />
 </div>
 
-<!-- Reservation Modal -->
 <ReservationModal
 	gift={selectedGift}
 	isOpen={isModalOpen}

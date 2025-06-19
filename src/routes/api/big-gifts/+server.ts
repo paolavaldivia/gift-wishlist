@@ -1,8 +1,8 @@
 import type { RequestHandler } from '../../../../.svelte-kit/types/src/routes/api/gifts/$types';
 import { error, json } from '@sveltejs/kit';
-import { bigGiftsQueries, generateId } from '$lib/server/db/gift-repository';
-import type { BigGift } from '$lib/types/gift';
 import { handleApiError } from '$lib/server/utils';
+import { bigGiftRepository } from '$lib/server/db/big-gift-repository';
+import type { NewBigGift } from '$lib/server/db/schema';
 
 export const GET: RequestHandler = async ({ locals }) => {
 	if (!locals.db) {
@@ -10,7 +10,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 	}
 
 	try {
-		const bigGifts = await bigGiftsQueries.getAllWithContributors(locals.db);
+		const bigGifts = await bigGiftRepository.findAll(locals.db);
 		return json(bigGifts);
 	} catch (err) {
 		console.error('Failed to fetch big gifts:', err);
@@ -24,18 +24,16 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}
 
 	try {
-		const bigGiftData = (await request.json()) as Omit<BigGift, 'id'>;
+		const bigGiftData = (await request.json()) as Omit<
+			NewBigGift,
+			'id' | 'currentAmount' | 'isTaken'
+		>;
 
 		const newBigGift = {
-			id: generateId(),
-			...bigGiftData,
-			currentAmount: 0,
-			isTaken: false,
-			createdAt: new Date(),
-			updatedAt: new Date()
+			...bigGiftData
 		};
 
-		const created = await bigGiftsQueries.create(locals.db, newBigGift);
+		const created = await bigGiftRepository.create(locals.db, newBigGift);
 		return json(created, { status: 201 });
 	} catch (err) {
 		handleApiError(err, 'Failed to create big gift', 'POST /api/big-gifts');
