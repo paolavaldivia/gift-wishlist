@@ -24,23 +24,10 @@ describe('Modal Component', () => {
 			}
 		});
 
-		// Use getByText instead of getByRole
 		expect(screen.getByText('Test Modal')).toBeInTheDocument();
 
-		// Or use querySelector to find the dialog element
-		const dialog = document.querySelector('dialog.modal-backdrop');
+		const dialog = screen.getByTestId('modal-backdrop');
 		expect(dialog).toBeInTheDocument();
-	});
-
-	test('has proper accessibility attributes', () => {
-		render(Modal, {
-			props: {
-				show: true,
-				title: 'Accessible Modal'
-			}
-		});
-
-		const dialog = document.querySelector('dialog.modal-backdrop');
 		expect(dialog).toHaveAttribute('aria-modal', 'true');
 		expect(dialog).toHaveAttribute('aria-labelledby', 'modal-title');
 	});
@@ -73,8 +60,7 @@ describe('Modal Component', () => {
 			}
 		});
 
-		// Click on the modal backdrop using querySelector
-		const dialog = document.querySelector('dialog.modal-backdrop');
+		const dialog = screen.getByTestId('modal-backdrop');
 		await user.click(dialog as HTMLElement);
 		expect(handleClose).toHaveBeenCalledTimes(1);
 	});
@@ -92,7 +78,7 @@ describe('Modal Component', () => {
 		});
 
 		// Click on the modal content
-		const modalContent = document.querySelector('.modal-content');
+		const modalContent = screen.getByTestId('modal-content');
 		await user.click(modalContent as HTMLElement);
 		expect(handleClose).not.toHaveBeenCalled();
 	});

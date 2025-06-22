@@ -25,6 +25,7 @@
 {#if show}
     <dialog
         class="modal-backdrop"
+        data-testid="modal-backdrop"
         onclick={handleBackdropClick}
         onkeydown={handleKeydown}
         transition:fade={{ duration: 200 }}
@@ -34,6 +35,7 @@
     >
         <div 
             class="modal-content"
+            data-testid="modal-content"
             style="max-width: {maxWidth};"
             transition:fly={{
                 y: 50,
