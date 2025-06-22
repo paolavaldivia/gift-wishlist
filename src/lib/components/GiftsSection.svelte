@@ -94,7 +94,14 @@
 		}
 	}
 
-	function handleContribute(event: CustomEvent<{ bigGiftId: string; amount: number; name: string; email?: string; message?: string; hideContributorName?: boolean }>) {
+	function handleContribute(event: CustomEvent<{
+		bigGiftId: string;
+		amount: number;
+		name: string;
+		email?: string;
+		message?: string;
+		hideContributorName?: boolean
+	}>) {
 		const { bigGiftId, amount, name, email, message, hideContributorName } = event.detail;
 
 		const bigGiftIdInput = document.getElementById('big-gift-id') as HTMLInputElement;
@@ -184,13 +191,14 @@
 <form
 	id="big-gift-contribution-form"
 	method="POST"
-	action="/?donateBigGift"
+	action="?/donateBigGift"
 	use:enhance={() => {
 		return ({ update }) => {
 			update({ reset: false });
 		};
-	}
-}>
+	}}
+	style="display: none;"
+>
 	<input type="hidden" id="big-gift-id" name="bigGiftId" />
 	<input type="hidden" id="contribution-amount" name="amount" />
 	<input type="hidden" id="contributor-name" name="name" />
@@ -241,7 +249,8 @@
     .gift-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: var(--grid-gap);
+        column-gap: var(--grid-col-gap);
+        row-gap: var(--grid-row-gap);
         margin-bottom: var(--spacing-3xl);
     }
 
@@ -285,7 +294,6 @@
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: var(--spacing-md);
         }
-
 
         .filter-controls {
             flex-wrap: wrap;

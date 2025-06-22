@@ -94,6 +94,7 @@ export const actions = {
 		}
 	},
 	donateBigGift: async ({ request, locals }) => {
+		console.log('here');
 		if (!locals.db) {
 			return fail(500, {
 				success: false,

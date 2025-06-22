@@ -104,7 +104,8 @@
     --container-max-width: 1200px;
 
     /* Grid & Layout */
-    --grid-gap: var(--spacing-xl);
+    --grid-col-gap: var(--spacing-xl);
+    --grid-row-gap: var(--spacing-2xl);
 
     --button-height: var(--spacing-xl);
 }

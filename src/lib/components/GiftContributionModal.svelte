@@ -4,6 +4,7 @@
 	import { formatPrice } from '$lib/util/format';
 	import * as m from '$lib/paraglide/messages';
 	import GoalProgress from '$lib/components/GoalProgress.svelte';
+	import PaymentOptions from '$lib/components/payment-options/PaymentOptions.svelte';
 
 	let {
 		bigGift,
@@ -15,6 +16,7 @@
 		isOpen: boolean;
 		close: () => void;
 		contribute: (event: CustomEvent<{
+			bigGiftId: string;
 			amount: number;
 			name: string;
 			email?: string;
@@ -58,7 +60,7 @@
 
 		// Validate amount
 		const numAmount = parseFloat(amount);
-		if (!amount.trim()) {
+		if (!amount) {
 			errors.amount = 'Contribution amount is required';
 		} else if (isNaN(numAmount) || numAmount <= 0) {
 			errors.amount = 'Please enter a valid amount';
@@ -111,6 +113,7 @@
 			// Dispatch contribution event
 			contribute(new CustomEvent('contribute', {
 				detail: {
+					bigGiftId: bigGift.id,
 					amount: parseFloat(amount),
 					name: name.trim(),
 					email: email.trim() || undefined,
@@ -149,6 +152,7 @@
 						Thank you for contributing {formatPrice(parseFloat(amount), bigGift.currency)}
 						to {bigGift.name}. Every contribution brings us closer to making this gift possible!
 					</div>
+					<PaymentOptions/>
 				</div>
 				<button class="btn btn-primary close-btn" onclick={handleClose}>
 					{m['giftList.close']()}
