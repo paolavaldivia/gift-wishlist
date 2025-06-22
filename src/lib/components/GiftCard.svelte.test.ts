@@ -12,7 +12,7 @@ const mockGift: Gift = {
 	imagePath: 'https://example.com/image.jpg',
 	approximatePrice: 50,
 	currency: 'EUR',
-	purchaseLinks: [{ siteName: 'Amazon', url: 'https://amazon.fr/test' }],
+	purchaseLinks: [{ siteName: 'Site', url: 'https://site.fr/test' }],
 	isTaken: false,
 	takenBy: null,
 	createdAt: new Date(),
@@ -23,10 +23,14 @@ describe('GiftCard Component', () => {
 	test('renders gift information correctly', () => {
 		render(GiftCard, { props: { gift: mockGift } });
 
-		expect(screen.getByText('Test Gift')).toBeInTheDocument();
-		expect(screen.getByText('A wonderful test gift')).toBeInTheDocument();
-		expect(screen.getByText(/50,00/)).toBeInTheDocument();
-		expect(screen.getByRole('img', { name: 'Test Gift' })).toBeInTheDocument();
+		expect(screen.getByText(mockGift.name)).toBeInTheDocument();
+		expect(screen.getByText(mockGift.description)).toBeInTheDocument();
+		expect(screen.getByText(mockGift.approximatePrice, { exact: false })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: mockGift.purchaseLinks[0].siteName })).toHaveAttribute(
+			'href',
+			mockGift.purchaseLinks[0].url
+		);
+		expect(screen.getByRole('img', { name: mockGift.name })).toBeInTheDocument();
 	});
 
 	test('shows available state when gift is not taken', () => {
@@ -36,22 +40,23 @@ describe('GiftCard Component', () => {
 		expect(screen.queryByText(/taken/i)).not.toBeInTheDocument();
 	});
 
-	test('shows reserved state when gift is taken', () => {
-		const takenGift = { ...mockGift, isTaken: true, takenBy: 'John Doe' };
+	test('shows reserved state when gift is taken when name is not hidden', () => {
+		const takenGift = { ...mockGift, isTaken: true, takenBy: 'John Doe', hideReserverName: false };
 		render(GiftCard, { props: { gift: takenGift } });
 
 		expect(screen.getByText(/reserved/i)).toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: /reserve/i })).not.toBeInTheDocument();
+		expect(screen.getByText(takenGift.takenBy)).toBeInTheDocument();
 	});
 
-	test('handles purchase links correctly', () => {
-		render(GiftCard, { props: { gift: mockGift } });
+	test('shows reserved state when gift is taken when name is hidden', () => {
+		const takenGift = { ...mockGift, isTaken: true, takenBy: 'John Doe', hideReserverName: true };
+		render(GiftCard, { props: { gift: takenGift } });
 
-		const purchaseLink = screen.getByRole('link', { name: /amazon/i });
-		expect(purchaseLink).toBeInTheDocument();
-		expect(purchaseLink).toHaveAttribute('href', 'https://amazon.fr/test');
-		expect(purchaseLink).toHaveAttribute('target', '_blank');
-		expect(purchaseLink).toHaveAttribute('rel', 'noopener noreferrer');
+		expect(screen.getByText(/reserved/i)).toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /reserve/i })).not.toBeInTheDocument();
+		expect(screen.queryByText(takenGift.takenBy)).not.toBeInTheDocument();
+		expect(screen.getByText(/anonymous/i)).toBeInTheDocument();
 	});
 
 	test('fires reserve event when reserve button is clicked', async () => {

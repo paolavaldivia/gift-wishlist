@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Gift } from '$lib/types/gift';
+	import { formatPrice } from '$lib/util/format';
 	import * as m from '$lib/paraglide/messages';
-	import WaveClipPath from './WaveClipPath.svelte';
 
 	let { gift, onReserve }: { gift: Gift; onReserve?: (giftId: string) => void } = $props();
 
@@ -11,18 +11,9 @@
 		}
 	}
 
-	function formatPrice(price: number, currency: string) {
-		return new Intl.NumberFormat('fr-FR', {
-			style: 'currency',
-			currency: currency
-		}).format(price);
-	}
-
-	// NEW: Helper to display the reserver's name with privacy consideration
 	function getReserverDisplayName(gift: Gift): string {
 		if (!gift.isTaken) return '';
 
-		// If privacy is enabled or name is not available, show anonymous message
 		if (gift.hideReserverName || !gift.takenBy) {
 			return m['giftList.anonymousReserver']();
 		}
@@ -31,7 +22,6 @@
 	}
 </script>
 
-<WaveClipPath />
 <article class="gift-card card" class:taken={gift.isTaken} data-testid="gift-card">
 	<div class="image-container">
 		<img src={gift.imagePath} alt={gift.name} class="splat-clip" />
@@ -182,7 +172,10 @@
 
     .purchase-link {
         color: var(--color-primary);
-        text-decoration: none;
+				text-decoration: underline;
+				text-decoration-color: var(--color-secondary);
+				text-underline-offset: 0.1rem;
+				text-decoration-thickness: 0.5px;
         padding: var(--spacing-xs) var(--spacing-sm);
         background: var(--color-gray-100);
         border-radius: var(--radius-sm);
@@ -209,7 +202,6 @@
         font-weight: var(--font-weight-bold);
     }
 
-    /* NEW: Styling for anonymous reservations */
     .taken-by.anonymous .name {
         color: var(--color-gray-500);
         font-style: italic;
@@ -222,7 +214,7 @@
     }
 
     .reserve-button {
-        margin-top: auto;
+        margin-top: var(--spacing-md);
         width: 100%;
     }
 </style>
