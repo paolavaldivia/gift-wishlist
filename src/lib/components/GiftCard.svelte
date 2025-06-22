@@ -59,7 +59,7 @@
 	{#snippet actionContent()}
 		{#if gift.isTaken}
 			<div class="taken-by" class:anonymous={gift.hideReserverName || !gift.takenBy}>
-				<span class="label">{m['giftList.taken']()}: </span>
+				<span class="label">{m['giftList.taken']()} </span>
 				<span class="name">{getReserverDisplayName(gift)}</span>
 				{#if gift.hideReserverName}
 					<span class="privacy-indicator" title={m['giftList.privacyEnabled']()}>🔒</span>

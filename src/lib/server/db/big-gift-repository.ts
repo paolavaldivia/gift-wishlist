@@ -27,8 +27,6 @@ export interface BigGift {
 	currentAmount: number;
 	currency: string;
 	purchaseLinks: PurchaseLink[];
-	isTaken: boolean;
-	takenBy: string | null;
 	createdAt: Date;
 	updatedAt: Date;
 	contributors: Contributor[];
@@ -51,10 +49,10 @@ export const bigGiftRepository = {
 			.from(contributors)
 			.where(eq(contributors.bigGiftId, id));
 		if (!result[0]) return null;
-		return transformBigGift(result[0], contributions);
+		return transformBigGiftForPublic(transformBigGift(result[0], contributions));
 	},
 
-	async create(
+	async createAdmin(
 		db: DatabaseInstance,
 		newBigGiftData: Omit<
 			NewBigGift,
@@ -142,6 +140,7 @@ function transformBigGiftForPublic(bigGift: BigGift): BigGift {
 		...bigGift,
 		contributors: bigGift.contributors.map((c) => ({
 			...c,
+			name: c.hideContributorName ? 'Anonymous' : c.name,
 			email: undefined,
 			message: undefined
 		}))
@@ -183,8 +182,6 @@ function transformBigGift(dbBigGift: DbBigGift, contributions: DbContributor[]):
 		currentAmount: Number(dbBigGift.currentAmount?.toFixed?.(2) ?? dbBigGift.currentAmount),
 		currency: dbBigGift.currency,
 		purchaseLinks,
-		isTaken: Boolean(dbBigGift.isTaken),
-		takenBy: dbBigGift.takenBy,
 		createdAt: dbBigGift.createdAt,
 		updatedAt: dbBigGift.updatedAt,
 		contributors

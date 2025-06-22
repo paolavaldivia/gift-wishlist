@@ -73,7 +73,7 @@
 			<div class="contributors-list">
 				{#each bigGift.contributors as contributor (contributor.id)}
 					<div class="contributor-item">
-						<span class="contributor-name">{contributor.name}</span>
+						<span class="contributor-name">{contributor.hideContributorName ? m['giftList.anonymousReserver']() : contributor.name}</span>
 						<span class="contributor-amount">{formatPrice(contributor.amount, bigGift.currency)}</span>
 					</div>
 				{/each}
@@ -127,31 +127,6 @@
         color: var(--color-success);
         font-weight: var(--font-weight-bold);
         font-size: var(--font-size-lg);
-    }
-
-    .links {
-        display: flex;
-        gap: var(--spacing-sm);
-        flex-wrap: wrap;
-        margin-top: var(--spacing-xs);
-    }
-
-    .purchase-link {
-        color: var(--color-primary);
-        text-decoration: underline;
-        text-decoration-color: var(--color-secondary);
-        text-underline-offset: 0.1rem;
-        text-decoration-thickness: 0.5px;
-        padding: var(--spacing-xs) var(--spacing-sm);
-        background: var(--color-gray-100);
-        border-radius: var(--radius-sm);
-        font-size: var(--font-size-sm);
-        transition: background-color var(--transition-fast);
-    }
-
-    .purchase-link:hover {
-        background: var(--color-gray-200);
-        text-decoration: underline;
     }
 
     .progress-section {
@@ -232,17 +207,6 @@
         }
     }
 
-    .progress-percentage {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-semibold);
-        color: white;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    }
-
     .contributors-preview {
         border-top: 1px solid var(--color-gray-100);
         padding-top: var(--spacing-md);
@@ -251,8 +215,8 @@
     .contributors-title {
         margin: 0 0 var(--spacing-sm) 0;
         font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-semibold);
-        color: var(--color-gray-700);
+        font-weight: var(--font-weight-medium);
+        color: var(--color-gray-500);
     }
 
     .contributors-list {
@@ -279,98 +243,9 @@
         color: var(--color-success);
     }
 
-    .more-contributors {
-        font-size: var(--font-size-xs);
-        color: var(--color-gray-500);
-        font-style: italic;
-        text-align: center;
-        padding-top: var(--spacing-xs);
-    }
-
-    .purchase-links {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-xs);
-    }
-
-    .links-label {
-        font-size: var(--font-size-sm);
-        color: var(--color-gray-600);
-        font-weight: var(--font-weight-medium);
-    }
-
-    .links-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--spacing-xs);
-    }
-
-    .purchase-link {
-        display: inline-flex;
-        align-items: center;
-        padding: var(--spacing-xs) var(--spacing-sm);
-        background: var(--color-gray-50);
-        color: var(--color-primary);
-        text-decoration: none;
-        border-radius: var(--radius-sm);
-        font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-medium);
-        border: 1px solid var(--color-gray-200);
-        transition: all 0.2s ease;
-    }
-
-    .purchase-link:hover {
-        background: var(--color-primary);
-        color: white;
-        transform: translateY(-1px);
-    }
-
     .gift-actions {
         margin-top: auto;
         padding-top: var(--spacing-md);
-    }
-
-    .contribute-btn {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--spacing-sm);
-        font-size: var(--font-size-base);
-        font-weight: var(--font-weight-semibold);
-        padding: var(--spacing-md);
-        border-radius: var(--radius-md);
-    }
-
-    .btn-icon {
-        font-size: var(--font-size-lg);
-    }
-
-    .status-message {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--spacing-sm);
-        padding: var(--spacing-md);
-        border-radius: var(--radius-md);
-        font-weight: var(--font-weight-semibold);
-        text-align: center;
-    }
-
-    .status-message.purchased {
-        background: var(--color-success-light);
-        color: var(--color-success-dark);
-        border: 1px solid var(--color-success);
-    }
-
-    .status-message.ready {
-        background: var(--color-info-light);
-        color: var(--color-info-dark);
-        border: 1px solid var(--color-info);
-    }
-
-    .status-icon {
-        font-size: var(--font-size-lg);
     }
 
     .contribute-button {
@@ -384,48 +259,13 @@
         .progress-info {
             gap: var(--spacing-sm);
         }
-
-        .current-amount,
-        .remaining-amount {
-            flex: 1;
-        }
-
-        .links-list {
-            flex-direction: column;
-        }
-
-        .purchase-link {
-            text-align: center;
-        }
     }
 
     /* Accessibility */
     @media (prefers-reduced-motion: reduce) {
-        .big-gift-card,
-        .gift-image,
-        .progress-bar,
-        .purchase-link {
+				.progress-bar {
             transition: none;
         }
-
-        .big-gift-card:hover {
-            transform: none;
-        }
-
-        .big-gift-card:hover .gift-image {
-            transform: none;
-        }
-
-        .progress-bar::after {
-            animation: none;
-        }
-    }
-
-    /* Focus styles for keyboard navigation */
-    .contribute-btn:focus-visible,
-    .purchase-link:focus-visible {
-        outline: 2px solid var(--color-primary);
-        outline-offset: 2px;
     }
 
 </style>
