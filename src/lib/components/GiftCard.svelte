@@ -2,6 +2,7 @@
 	import type { Gift } from '$lib/types/gift';
 	import { formatPrice } from '$lib/util/format';
 	import * as m from '$lib/paraglide/messages';
+	import Card from '$lib/components/Card.svelte';
 
 	let { gift, onReserve }: { gift: Gift; onReserve?: (giftId: string) => void } = $props();
 
@@ -22,20 +23,22 @@
 	}
 </script>
 
-<article class="gift-card card" class:taken={gift.isTaken} data-testid="gift-card">
-	<div class="image-container">
-		<img src={gift.imagePath} alt={gift.name} class="splat-clip" />
+<Card
+	{...{'data-testid': 'gift-card'}}
+	class={{ 'gift-card': true, taken: gift.isTaken }}
+	title={gift.name}
+	description={gift.description}
+	imagePath={gift.imagePath}
+>
+	{#snippet imageOverlay()}
 		{#if gift.isTaken}
 			<div class="taken-overlay">
 				<span class="taken-text">{m['giftList.alreadyTaken']()}</span>
 			</div>
 		{/if}
-	</div>
+	{/snippet}
 
-	<div class="content">
-		<h3>{gift.name}</h3>
-		<p class="description">{gift.description}</p>
-
+	{#snippet content()}
 		<div class="price">
 			<span class="label">{m['giftList.approximatePrice']()}: </span>
 			<span class="value">{formatPrice(gift.approximatePrice, gift.currency)}</span>
@@ -51,7 +54,9 @@
 				{/each}
 			</div>
 		</div>
+	{/snippet}
 
+	{#snippet actionContent()}
 		{#if gift.isTaken}
 			<div class="taken-by" class:anonymous={gift.hideReserverName || !gift.takenBy}>
 				<span class="label">{m['giftList.taken']()}: </span>
@@ -69,40 +74,12 @@
 				{m['giftList.reserve']()}
 			</button>
 		{/if}
-	</div>
-</article>
+	{/snippet}
+</Card>
 
 <style>
-    .gift-card {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .gift-card.taken {
+    :global(.gift-card.taken) {
         opacity: 0.8;
-    }
-
-    .image-container {
-        position: relative;
-        width: 100%;
-        height: 200px;
-        overflow: hidden;
-        background: var(--color-gray-50);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .image-container img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform var(--transition-base);
-    }
-
-    .image-container:hover img {
-        transform: scale(1.05);
     }
 
     .taken-overlay {
@@ -125,27 +102,6 @@
         padding: var(--spacing-sm) var(--spacing-md);
         border-radius: var(--radius-sm);
         transform: rotate(-15deg);
-    }
-
-    .content {
-        padding: var(--spacing-lg);
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-sm);
-    }
-
-    h3 {
-        margin: 0;
-        font-size: var(--font-size-xl);
-        color: var(--color-gray-800);
-    }
-
-    .description {
-        color: var(--color-gray-500);
-        font-size: var(--font-size-sm);
-        line-height: var(--line-height-normal);
-        margin: 0;
     }
 
     .price, .purchase-links, .taken-by {
@@ -172,10 +128,10 @@
 
     .purchase-link {
         color: var(--color-primary);
-				text-decoration: underline;
-				text-decoration-color: var(--color-secondary);
-				text-underline-offset: 0.1rem;
-				text-decoration-thickness: 0.5px;
+        text-decoration: underline;
+        text-decoration-color: var(--color-secondary);
+        text-underline-offset: 0.1rem;
+        text-decoration-thickness: 0.5px;
         padding: var(--spacing-xs) var(--spacing-sm);
         background: var(--color-gray-100);
         border-radius: var(--radius-sm);

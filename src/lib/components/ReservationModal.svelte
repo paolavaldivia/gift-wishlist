@@ -2,6 +2,7 @@
 	import type { Gift } from '$lib/types/gift';
 	import * as m from '$lib/paraglide/messages';
 	import Modal from '$lib/components/Modal.svelte';
+	import { formatPrice } from '$lib/util/format';
 
 	let {
 		gift,
@@ -59,13 +60,6 @@
 		} finally {
 			isSubmitting = false;
 		}
-	}
-
-	function formatPrice(price: number, currency: string) {
-		return new Intl.NumberFormat('fr-FR', {
-			style: 'currency',
-			currency: currency
-		}).format(price);
 	}
 </script>
 

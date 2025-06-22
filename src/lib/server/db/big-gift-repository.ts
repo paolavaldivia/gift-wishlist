@@ -1,6 +1,22 @@
-import { type BigGift as DbBigGift, bigGifts, contributors, type NewBigGift } from './schema.js';
+import {
+	type BigGift as DbBigGift,
+	bigGifts,
+	type Contributor as DbContributor,
+	contributors,
+	type NewBigGift
+} from './schema.js';
 import { asc, eq } from 'drizzle-orm';
 import type { PurchaseLink } from '$lib/types/gift';
+
+export interface Contributor {
+	id: string;
+	name: string;
+	amount: number;
+	email?: string | null;
+	message?: string | null;
+	hideContributorName: boolean;
+	createdAt: Date;
+}
 
 export interface BigGift {
 	id: string;
@@ -15,20 +31,27 @@ export interface BigGift {
 	takenBy: string | null;
 	createdAt: Date;
 	updatedAt: Date;
+	contributors: Contributor[];
 }
-
 type DatabaseInstance = App.Locals['db'];
 
 export const bigGiftRepository = {
 	async findAll(db: DatabaseInstance): Promise<BigGift[]> {
 		const result = await db.select().from(bigGifts).orderBy(asc(bigGifts.name));
-		return result.map(transformBigGift);
+		const contributions = await db.select().from(contributors);
+		return result.map((dbBigGift) =>
+			transformBigGiftForPublic(transformBigGift(dbBigGift, contributions))
+		);
 	},
 
 	async findById(db: DatabaseInstance, id: string): Promise<BigGift | null> {
 		const result = await db.select().from(bigGifts).where(eq(bigGifts.id, id));
+		const contributions = await db
+			.select()
+			.from(contributors)
+			.where(eq(contributors.bigGiftId, id));
 		if (!result[0]) return null;
-		return transformBigGift(result[0]);
+		return transformBigGift(result[0], contributions);
 	},
 
 	async create(
@@ -49,7 +72,7 @@ export const bigGiftRepository = {
 		};
 
 		const [created] = await db.insert(bigGifts).values(bigGiftData).returning();
-		return transformBigGift(created);
+		return transformBigGift(created, []);
 	},
 
 	async addContribution(
@@ -65,6 +88,7 @@ export const bigGiftRepository = {
 		}
 	): Promise<BigGift | null> {
 		let updatedBigGift: DbBigGift | null = null;
+		let updatedContributions: DbContributor[] = [];
 
 		// Start a transaction to ensure both operations succeed or fail together
 		await db.transaction(async (tx) => {
@@ -95,11 +119,14 @@ export const bigGiftRepository = {
 
 			if (updated) {
 				updatedBigGift = updated;
+				updatedContributions = await tx.select().from(contributors);
 			}
 		});
 
 		// Return the transformed big gift if we got an update
-		return updatedBigGift ? transformBigGift(updatedBigGift) : null;
+		return updatedBigGift
+			? transformBigGiftForPublic(transformBigGift(updatedBigGift, updatedContributions))
+			: null;
 	},
 	async delete(db: DatabaseInstance, id: string): Promise<void> {
 		await db.delete(bigGifts).where(eq(bigGifts.id, id));
@@ -110,7 +137,43 @@ function generateId(): string {
 	return crypto.randomUUID();
 }
 
-function transformBigGift(dbBigGift: DbBigGift): BigGift {
+function transformBigGiftForPublic(bigGift: BigGift): BigGift {
+	return {
+		...bigGift,
+		contributors: bigGift.contributors.map((c) => ({
+			...c,
+			email: undefined,
+			message: undefined
+		}))
+	};
+}
+
+function transformBigGift(dbBigGift: DbBigGift, contributions: DbContributor[]): BigGift {
+	let purchaseLinks: PurchaseLink[] = [];
+
+	try {
+		if (typeof dbBigGift.purchaseLinks === 'string') {
+			purchaseLinks = JSON.parse(dbBigGift.purchaseLinks);
+		} else if (Array.isArray(dbBigGift.purchaseLinks)) {
+			purchaseLinks = dbBigGift.purchaseLinks;
+		}
+	} catch (error) {
+		console.error('Error parsing purchaseLinks for big gift', dbBigGift.id, error);
+		purchaseLinks = [];
+	}
+
+	const contributors = contributions
+		.filter((c) => c.bigGiftId === dbBigGift.id)
+		.map((c) => ({
+			id: c.id,
+			name: c.name,
+			amount: c.amount,
+			email: c.email,
+			message: c.message,
+			hideContributorName: Boolean(c.hideContributorName),
+			createdAt: c.createdAt
+		}));
+
 	return {
 		id: dbBigGift.id,
 		name: dbBigGift.name,
@@ -119,10 +182,11 @@ function transformBigGift(dbBigGift: DbBigGift): BigGift {
 		targetAmount: Number(dbBigGift.targetAmount?.toFixed?.(2) ?? dbBigGift.targetAmount),
 		currentAmount: Number(dbBigGift.currentAmount?.toFixed?.(2) ?? dbBigGift.currentAmount),
 		currency: dbBigGift.currency,
-		purchaseLinks: dbBigGift.purchaseLinks,
+		purchaseLinks,
 		isTaken: Boolean(dbBigGift.isTaken),
 		takenBy: dbBigGift.takenBy,
 		createdAt: dbBigGift.createdAt,
-		updatedAt: dbBigGift.updatedAt
+		updatedAt: dbBigGift.updatedAt,
+		contributors
 	};
 }

@@ -2,12 +2,13 @@ import type { Actions, PageServerLoad } from './$types';
 import { giftRepository } from '$lib/server/db/gift-repository'; // NEW: Use repository
 import { error, fail } from '@sveltejs/kit';
 import { building } from '$app/environment';
+import { bigGiftRepository } from '$lib/server/db/big-gift-repository';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	// Check if db is available
 	if (building) {
 		return {
-			gifts: []
+			gifts: [],
+			bigGifts: []
 		};
 	}
 	if (!locals.db) {
@@ -16,8 +17,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 
 	try {
+		const [gifts, bigGifts] = await Promise.all([
+			giftRepository.findAll(locals.db),
+			bigGiftRepository.findAll(locals.db)
+		]);
 		return {
-			gifts: await giftRepository.findAll(locals.db)
+			gifts,
+			bigGifts
 		};
 	} catch (err) {
 		console.error('Failed to load gifts:', err);
@@ -25,7 +31,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 };
 
-export const actions: Actions = {
+export const actions = {
 	reserveGift: async ({ request, locals }) => {
 		if (!locals.db) {
 			return fail(500, {
@@ -86,5 +92,73 @@ export const actions: Actions = {
 				message: err instanceof Error ? err.message : 'Failed to reserve gift'
 			});
 		}
+	},
+	donateBigGift: async ({ request, locals }) => {
+		if (!locals.db) {
+			return fail(500, {
+				success: false,
+				message: 'Database not available'
+			});
+		}
+
+		const formData = await request.formData();
+		const bigGiftId = formData.get('bigGiftId')?.toString();
+		const amount = parseFloat(formData.get('amount')?.toString() || '0');
+		const name = formData.get('name')?.toString();
+		const email = formData.get('email')?.toString();
+		const message = formData.get('message')?.toString();
+		const hideContributorName = formData.get('hideContributorName') === 'true';
+
+		if (!bigGiftId || !amount || !name) {
+			return fail(400, {
+				success: false,
+				message: 'Big gift ID, amount, and name are required'
+			});
+		}
+
+		try {
+			// Check if big gift exists
+			const existingBigGift = await bigGiftRepository.findById(locals.db, bigGiftId);
+			if (!existingBigGift) {
+				return fail(404, {
+					success: false,
+					message: 'Big gift not found'
+				});
+			}
+
+			// Add contribution
+			const updatedBigGift = await bigGiftRepository.addContribution(locals.db, {
+				bigGiftId,
+				name,
+				amount,
+				email,
+				message,
+				hideContributorName,
+				createdAt: new Date()
+			});
+
+			if (!updatedBigGift) {
+				return fail(500, {
+					success: false,
+					message: 'Failed to add contribution'
+				});
+			}
+
+			return {
+				success: true,
+				bigGift: updatedBigGift,
+				name,
+				amount,
+				email,
+				message,
+				hideContributorName
+			};
+		} catch (err) {
+			console.error('Failed to add contribution:', err);
+			return fail(500, {
+				success: false,
+				message: err instanceof Error ? err.message : 'Failed to add contribution'
+			});
+		}
 	}
-};
+} satisfies Actions;
