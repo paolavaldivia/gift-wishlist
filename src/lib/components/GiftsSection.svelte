@@ -6,6 +6,7 @@
 	import type { BigGift, Gift } from '$lib/types/gift';
 	import type { ActionData } from '../../../.svelte-kit/types/src/routes/$types';
 	import BigGiftCard from '$lib/components/BigGiftCard.svelte';
+	import GiftContributionModal from '$lib/components/GiftContributionModal.svelte';
 
 	let { gifts, bigGifts, onShowError, onHideError, form }: {
 		gifts: Gift[],
@@ -16,8 +17,9 @@
 	} = $props();
 
 	let selectedGift = $state<Gift | null>(null);
+	let selectedBigGift = $state<BigGift | null>(null);
+
 	let filterMode = $state<'all' | 'available'>('all');
-	let isModalOpen = $state(false);
 	let lastFormResult = $state<string | null>(null);
 
 	let filteredGifts = $derived(
@@ -49,7 +51,7 @@
 					);
 				} else if (!form.success) {
 					showErrorNotification(form.message || 'Unknown error');
-					closeModal();
+					closeReserveModal();
 				}
 			}
 		}
@@ -62,18 +64,23 @@
 		}, 5000);
 	}
 
-	function handleReserveClick(giftId: string) {
+	function openReserveModal(giftId: string) {
 		const gift = gifts.find(g => g.id === giftId);
 		if (gift && !gift.isTaken) {
-			openModal(gift);
+			selectedGift = gift;
 		}
 	}
 
-	// Updated to handle privacy preference
+	function openContributeModal(bigGiftId: string) {
+		const bigGift = bigGifts.find(g => g.id === bigGiftId);
+		if (bigGift && bigGift.targetAmount > bigGift.currentAmount) {
+			selectedBigGift = bigGift;
+		}
+	}
+
 	function handleReserve(event: CustomEvent<{ giftId: string; name: string; hideReserverName: boolean }>) {
 		const { giftId, name, hideReserverName } = event.detail;
 
-		// Set form values
 		const giftIdInput = document.getElementById('gift-id') as HTMLInputElement;
 		const nameInput = document.getElementById('gift-name') as HTMLInputElement;
 		const hideNameInput = document.getElementById('gift-hide-reserver-name') as HTMLInputElement;
@@ -87,14 +94,34 @@
 		}
 	}
 
-	function openModal(gift: Gift) {
-		selectedGift = gift;
-		isModalOpen = true;
+	function handleContribute(event: CustomEvent<{ bigGiftId: string; amount: number; name: string; email?: string; message?: string; hideContributorName?: boolean }>) {
+		const { bigGiftId, amount, name, email, message, hideContributorName } = event.detail;
+
+		const bigGiftIdInput = document.getElementById('big-gift-id') as HTMLInputElement;
+		const amountInput = document.getElementById('contribution-amount') as HTMLInputElement;
+		const nameInput = document.getElementById('contributor-name') as HTMLInputElement;
+		const emailInput = document.getElementById('contributor-email') as HTMLInputElement;
+		const messageInput = document.getElementById('contributor-message') as HTMLInputElement;
+		const hideNameInput = document.getElementById('hide-contributor-name') as HTMLInputElement;
+		const form = document.getElementById('big-gift-contribution-form') as HTMLFormElement;
+
+		if (bigGiftIdInput && amountInput && nameInput && emailInput && messageInput && hideNameInput && form) {
+			bigGiftIdInput.value = bigGiftId;
+			amountInput.value = amount.toString();
+			nameInput.value = name;
+			emailInput.value = email || '';
+			messageInput.value = message || '';
+			hideNameInput.value = hideContributorName?.toString() || 'false';
+			form.requestSubmit();
+		}
 	}
 
-	function closeModal() {
-		isModalOpen = false;
+	function closeReserveModal() {
 		selectedGift = null;
+	}
+
+	function closeContributeModal() {
+		selectedBigGift = null;
 	}
 </script>
 
@@ -124,12 +151,13 @@
 		{#each filteredGifts as gift (gift.id)}
 			<GiftCard
 				{gift}
-				onReserve={handleReserveClick}
+				onReserve={openReserveModal}
 			/>
 		{/each}
 		{#each filteredBigGifts as bigGift (bigGift.id)}
 			<BigGiftCard
 				{bigGift}
+				onContribute={openContributeModal}
 			/>
 		{/each}
 	</div>
@@ -174,11 +202,17 @@
 
 <ReservationModal
 	gift={selectedGift}
-	isOpen={isModalOpen}
-	close={closeModal}
+	isOpen={selectedGift !== null}
+	close={closeReserveModal}
 	reserve={handleReserve}
 />
 
+<GiftContributionModal
+	bigGift={selectedBigGift}
+	isOpen={selectedBigGift !== null}
+	close={closeContributeModal}
+	contribute={handleContribute}
+/>
 
 <style>
 

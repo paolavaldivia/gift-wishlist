@@ -39,7 +39,7 @@
     "contributionModal": {
       "title": "Contribute to {name}",
       "amount": "Amount",
-      "amountPlaceholder": "Enter amount",
+      "amountPlaceholder": "How much do you want to contribute?",
       "name": "Name",
       "namePlaceholder": "Your name",
       "message": "Message",

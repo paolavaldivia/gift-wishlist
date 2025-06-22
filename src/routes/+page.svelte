@@ -47,10 +47,10 @@
 		/>
 	{/if}
 
+	<DonationSection />
 </div>
 
 
-<DonationSection />
 
 <style>
     .error-notification {

@@ -18,7 +18,7 @@
 		<div class="baby-icon">👶</div>
 		<div class="floating-items">
 			<span class="item" style="--delay: 0s">🍼</span>
-			<span class="item" style="--delay: 0.5s">🧸</span>
+			<span class="item" style="--delay: 0.5s">🦁</span>
 			<span class="item" style="--delay: 1s">👶🏻</span>
 			<span class="item" style="--delay: 1.5s">🎁</span>
 		</div>

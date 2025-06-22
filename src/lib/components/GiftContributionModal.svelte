@@ -1,57 +1,121 @@
 <script lang="ts">
-	import type { Gift } from '$lib/types/gift';
-	import * as m from '$lib/paraglide/messages';
+	import type { BigGift } from '$lib/types/gift';
 	import Modal from '$lib/components/Modal.svelte';
 	import { formatPrice } from '$lib/util/format';
+	import * as m from '$lib/paraglide/messages';
+	import GoalProgress from '$lib/components/GoalProgress.svelte';
 
 	let {
-		gift,
+		bigGift,
 		isOpen = false,
 		close,
-		reserve
+		contribute
 	}: {
-		gift: Gift | null;
+		bigGift: BigGift | null;
 		isOpen: boolean;
 		close: () => void;
-		reserve: (event: CustomEvent<{ giftId: string; name: string; hideReserverName: boolean }>) => void;
+		contribute: (event: CustomEvent<{
+			amount: number;
+			name: string;
+			email?: string;
+			message?: string;
+			hideContributorName?: boolean;
+		}>) => void;
 	} = $props();
 
-
+	let amount = $state('');
 	let name = $state('');
-	let hideReserverName = $state(false); // Privacy state
+	let email = $state('');
+	let message = $state('');
+	let hideContributorName = $state(false);
 	let isSubmitting = $state(false);
 	let isSuccess = $state(false);
+	let formErrors = $state<Record<string, string>>({});
+	let amountInput: HTMLInputElement | null = $state(null);
 	let nameInput: HTMLInputElement | null = $state(null);
 
-	// Focus input when modal opens
+	// Focus management
 	$effect(() => {
-		if (isOpen && nameInput && !isSuccess) {
-			setTimeout(() => nameInput?.focus(), 100);
+		if (isOpen && amountInput && !isSuccess) {
+			setTimeout(() => amountInput?.focus(), 100);
 		}
 	});
 
 	function handleClose() {
 		if (isSubmitting) return;
+		amount = '';
 		name = '';
-		hideReserverName = false; // Reset privacy state
+		email = '';
+		message = '';
+		hideContributorName = false;
 		isSuccess = false;
+		formErrors = {};
 		close();
+	}
+
+	function validateForm(): boolean {
+		const errors: Record<string, string> = {};
+
+		// Validate amount
+		const numAmount = parseFloat(amount);
+		if (!amount.trim()) {
+			errors.amount = 'Contribution amount is required';
+		} else if (isNaN(numAmount) || numAmount <= 0) {
+			errors.amount = 'Please enter a valid amount';
+		} else if (numAmount < 1) {
+			errors.amount = 'Minimum contribution is €1';
+		} else if (numAmount > 10000) {
+			errors.amount = 'Maximum contribution is €10,000';
+		}
+
+		// Validate name
+		if (!name.trim()) {
+			errors.name = 'Name is required';
+		} else if (name.trim().length < 2) {
+			errors.name = 'Name must be at least 2 characters';
+		}
+
+		// Validate email (optional but must be valid if provided)
+		if (email.trim() && !isValidEmail(email.trim())) {
+			errors.email = 'Please enter a valid email address';
+		}
+
+		formErrors = errors;
+		return Object.keys(errors).length === 0;
+	}
+
+	function isValidEmail(email: string): boolean {
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		return emailRegex.test(email);
 	}
 
 	function handleSubmit(event: Event) {
 		event.preventDefault();
 
-		if (!gift || !name.trim() || isSubmitting) return;
+		if (!bigGift || isSubmitting) return;
+
+		if (!validateForm()) {
+			// Focus first error field
+			const firstErrorField = Object.keys(formErrors)[0];
+			if (firstErrorField === 'amount' && amountInput) {
+				amountInput.focus();
+			} else if (firstErrorField === 'name' && nameInput) {
+				nameInput.focus();
+			}
+			return;
+		}
 
 		isSubmitting = true;
 
 		try {
-			// Dispatch the reserve event with the gift ID, name, and privacy preference
-			reserve(new CustomEvent('reserve', {
+			// Dispatch contribution event
+			contribute(new CustomEvent('contribute', {
 				detail: {
-					giftId: gift.id,
-					name,
-					hideReserverName // Include privacy preference
+					amount: parseFloat(amount),
+					name: name.trim(),
+					email: email.trim() || undefined,
+					message: message.trim() || undefined,
+					hideContributorName
 				}
 			}));
 
@@ -64,11 +128,11 @@
 </script>
 
 <Modal
-	show={isOpen && gift !== null}
-	title={isSuccess ? m['giftList.thankYou']({ name }) : m['giftList.reserve']()}
+	show={isOpen && bigGift !== null}
+	title={isSuccess ? 'Thank You!' : `Contribute to ${bigGift?.name || ''}`}
 	onClose={handleClose}
 >
-	{#if gift}
+	{#if bigGift}
 		{#if isSuccess}
 			<!-- Success View -->
 			<div class="success-message">
@@ -77,29 +141,15 @@
 				<div class="success-content">
 					<!-- Gift image (left column) -->
 					<div class="gift-image success-image">
-						<img src={gift.imagePath} alt={gift.name} />
+						<img src={bigGift.imagePath} alt={bigGift.name} />
 					</div>
-					<!-- Price and purchase links (right column) -->
-					<div class="success-details">
-						<div class="gift-price success-price">
-							{formatPrice(gift.approximatePrice, gift.currency)}
-						</div>
 
-						{#if gift.purchaseLinks && gift.purchaseLinks.length > 0}
-							<div class="purchase-links">
-								<span class="label">{m['giftList.buyAt']()}: </span>
-								<div class="links">
-									{#each gift.purchaseLinks as link (link.url)}
-										<a href={link.url} target="_blank" rel="noopener noreferrer" class="purchase-link">
-											{link.siteName}
-										</a>
-									{/each}
-								</div>
-							</div>
-						{/if}
+					<!-- Success message (right column) -->
+					<div class="success-details">
+						Thank you for contributing {formatPrice(parseFloat(amount), bigGift.currency)}
+						to {bigGift.name}. Every contribution brings us closer to making this gift possible!
 					</div>
 				</div>
-
 				<button class="btn btn-primary close-btn" onclick={handleClose}>
 					{m['giftList.close']()}
 				</button>
@@ -108,34 +158,73 @@
 			<!-- Gift Information -->
 			<div class="gift-preview">
 				<div class="gift-image">
-					<img src={gift.imagePath} alt={gift.name} />
+					<img src={bigGift.imagePath} alt={bigGift.name} />
 				</div>
 				<div class="gift-details">
-					<h3>{gift.name}</h3>
-					<p class="gift-description">{gift.description}</p>
-					<div class="gift-price">
-						{formatPrice(gift.approximatePrice, gift.currency)}
+					<h3 class="gift-name">{bigGift.name}</h3>
+					<div class="gift-progress-section">
+						<GoalProgress
+							currentAmount={bigGift.currentAmount}
+							targetAmount={bigGift.targetAmount}
+							currency={bigGift.currency}
+						/>
 					</div>
 				</div>
 			</div>
 
-			<!-- Reservation Form -->
-			<form class="reservation-form" onsubmit={handleSubmit}>
+			<!-- Contribution Form -->
+			<form class="contribution-form" onsubmit={handleSubmit}>
 				<div class="form-group">
-					<label for="reservationName" class="form-label">
-						{m['giftList.name']()}
+					<label for="contributionAmount" class="form-label">
+						{m['giftList.contributionModal.amount']()}
+					</label>
+					<div class="amount-input-group">
+						<input
+							id="contributionAmount"
+							bind:this={amountInput}
+							bind:value={amount}
+							type="number"
+							min="1"
+							max="10000"
+							step="1"
+							class="form-input amount-input"
+							placeholder={m['giftList.contributionModal.amountPlaceholder']()}
+							disabled={isSubmitting}
+							aria-describedby={formErrors.amount ? 'amount-error' : undefined}
+							oninput={() => { if (formErrors.amount) formErrors.amount = ''; }}
+						/>
+						{#if formErrors.amount}
+							<div id="amount-error" class="error-message" role="alert">
+								{formErrors.amount}
+							</div>
+						{/if}
+					</div>
+				</div>
+
+				<!-- Contributor Information -->
+				<div class="form-group">
+					<label for="contributorName" class="form-label">
+						{m['giftList.contributionModal.name']()}
 					</label>
 					<input
-						id="reservationName"
+						id="contributorName"
 						bind:this={nameInput}
 						bind:value={name}
 						type="text"
 						class="form-input"
-						placeholder={m['giftList.namePlaceholder']()}
+						class:error={formErrors.name}
+						placeholder={m['giftList.contributionModal.namePlaceholder']()}
 						required
 						disabled={isSubmitting}
 						autocomplete="name"
+						aria-describedby={formErrors.name ? 'name-error' : undefined}
+						oninput={() => { if (formErrors.name) formErrors.name = ''; }}
 					/>
+					{#if formErrors.name}
+						<div id="name-error" class="error-message" role="alert">
+							{formErrors.name}
+						</div>
+					{/if}
 				</div>
 
 				<!-- Privacy checkbox -->
@@ -143,7 +232,7 @@
 					<label class="checkbox-label">
 						<input
 							type="checkbox"
-							bind:checked={hideReserverName}
+							bind:checked={hideContributorName}
 							disabled={isSubmitting}
 							class="checkbox-input"
 						/>
@@ -152,6 +241,7 @@
 					<p class="privacy-note">{m['giftList.privacyNote']()}</p>
 				</div>
 
+				<!-- Form Actions -->
 				<div class="form-actions">
 					<button
 						type="button"
@@ -159,18 +249,19 @@
 						onclick={handleClose}
 						disabled={isSubmitting}
 					>
-						{m['giftList.cancel']()}
+						Cancel
 					</button>
 					<button
 						type="submit"
 						class="btn btn-primary"
-						disabled={!name.trim() || isSubmitting}
+						disabled={!amount || !name.trim() || isSubmitting}
 					>
 						{#if isSubmitting}
 							<span class="spinner"></span>
-							{m['giftList.reserving']()}
+							Processing...
 						{:else}
-							{m['giftList.reserve']()}
+							<span class="btn-icon">💝</span>
+							Contribute {amount ? formatPrice(parseFloat(amount) || 0, bigGift.currency) : ''}
 						{/if}
 					</button>
 				</div>
@@ -178,6 +269,7 @@
 		{/if}
 	{/if}
 </Modal>
+
 
 <style>
     .gift-preview {
@@ -215,25 +307,11 @@
         line-height: var(--line-height-tight);
     }
 
-    .gift-description {
-        margin: 0 0 var(--spacing-sm) 0;
-        color: var(--color-gray-600);
-        font-size: var(--font-size-sm);
-        line-height: var(--line-height-normal);
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-        -webkit-box-orient: vertical;
+    .gift-progress-section {
+        margin-top: auto;
     }
 
-    .gift-price {
-        font-size: var(--font-size-lg);
-        font-weight: var(--font-weight-bold);
-        color: var(--color-success);
-    }
-
-    .reservation-form {
+    .contribution-form {
         display: grid;
         gap: var(--spacing-lg);
     }
@@ -241,6 +319,7 @@
     .form-group {
         margin: 0;
     }
+
 
     .form-label {
         display: block;
@@ -270,6 +349,7 @@
         background: var(--color-gray-50);
         cursor: not-allowed;
     }
+
 
     /* Privacy checkbox styles */
     .checkbox-group {
@@ -305,6 +385,7 @@
         font-style: italic;
         line-height: var(--line-height-normal);
     }
+
 
     .form-actions {
         display: flex;
@@ -369,71 +450,4 @@
         margin-bottom: var(--spacing-md);
     }
 
-    .purchase-links {
-        margin-top: var(--spacing-md);
-    }
-
-    .purchase-links .label {
-        color: var(--color-gray-500);
-        font-weight: var(--font-weight-medium);
-        display: block;
-        margin-bottom: var(--spacing-xs);
-    }
-
-    .links {
-        display: flex;
-        gap: var(--spacing-sm);
-        flex-wrap: wrap;
-    }
-
-    .purchase-link {
-        color: var(--color-primary);
-        text-decoration: none;
-        padding: var(--spacing-xs) var(--spacing-sm);
-        background: var(--color-gray-100);
-        border-radius: var(--radius-sm);
-        font-size: var(--font-size-sm);
-        transition: background-color var(--transition-fast);
-    }
-
-    .purchase-link:hover {
-        background: var(--color-gray-200);
-        text-decoration: underline;
-    }
-
-    /* Mobile responsiveness */
-    @media (max-width: 768px) {
-        .gift-preview {
-            flex-direction: column;
-            gap: var(--spacing-md);
-        }
-
-        .gift-image {
-            width: 80px;
-            height: 80px;
-            align-self: center;
-        }
-
-        .form-actions {
-            flex-direction: column-reverse;
-        }
-
-        .form-actions .btn {
-            width: 100%;
-        }
-
-        /* Mobile responsiveness for success view */
-        .success-content {
-            flex-direction: column-reverse;
-        }
-        
-        .success-details {
-            text-align: center;
-            width: 100%;
-        }
-        
-        .success-image {
-            margin-bottom: var(--spacing-md);
-        }
-    }
 </style>
