@@ -26,7 +26,25 @@
 		"anonymousReserver": "Quelqu'un (anonyme)",
 		"privacyEnabled": "Cette personne a choisi de rester anonyme",
 		"showAll": "Afficher tout",
-		"showAvailable": "Afficher disponibles"
+		"showAvailable": "Afficher disponibles",
+		"noGifts": "Aucun cadeau disponible",
+		"goalReached": "Objectif atteint !",
+		"targetAmount": "Montant cible",
+		"contribute": "Contribuer à ce cadeau",
+		"contributeButton": "Contribuer",
+		"contributionModal": {
+			"title": "Contribuer à {name}",
+			"amount": "Montant",
+			"amountPlaceholder": "Combien voulez-vous contribuer ?",
+			"name": "Nom",
+			"namePlaceholder": "Votre nom",
+			"message": "Message",
+			"messagePlaceholder": "Votre message",
+			"hideMyName": "Cacher mon nom sur la liste",
+			"privacyNote": "Votre nom ne sera pas affiché publiquement si cette option est cochée",
+			"thankYouDetails": "Merci pour votre contribution de {price} pour {name} ! Votre soutien est précieux pour nous !",
+			"babyPaymentThanks": "Vous pouvez trouver les détails de votre contribution ci-dessous - notre petit locataire va faire du shopping ! 👶🛍️"
+		}
 	},
 	"donation": {
 		"title": "Cagnotte de naissance",
@@ -37,5 +55,12 @@
 		"accountHolder": "Titulaire du compte",
 		"paypalDescription": "Pour une contribution rapide et facile, utilisez PayPal :",
 		"paypalButton": "Donner avec PayPal"
+	},
+	"errors": {
+		"giftList": {
+			"reservationFailed": "Erreur lors de la réservation",
+			"giftNotFound": "Cadeau introuvable",
+			"alreadyTaken": "Cadeau déjà réservé"
+		}
 	}
 }

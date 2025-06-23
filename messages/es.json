@@ -26,12 +26,41 @@
 		"anonymousReserver": "Alguien (anónimo)",
 		"privacyEnabled": "Esta persona eligió permanecer anónima",
 		"showAll": "Mostrar todos",
-		"showAvailable": "Mostrar disponibles"
+		"showAvailable": "Mostrar disponibles",
+		"noGifts": "No hay regalos disponibles",
+		"goalReached": "¡Objetivo alcanzado!",
+		"targetAmount": "Monto objetivo",
+		"contribute": "Contribuir a este regalo",
+		"contributeButton": "Contribuir",
+		"contributionModal": {
+			"title": "Contribuir a {name}",
+			"amount": "Cantidad",
+			"amountPlaceholder": "¿Cuánto quieres contribuir?",
+			"name": "Nombre",
+			"namePlaceholder": "Tu nombre",
+			"message": "Mensaje",
+			"messagePlaceholder": "Tu mensaje",
+			"hideMyName": "Ocultar mi nombre en la lista",
+			"privacyNote": "Tu nombre no se mostrará públicamente si esta opción está marcada",
+			"thankYouDetails": "¡Gracias por tu contribución de {price} a {name}! Tu apoyo es preciado para nosotros!",
+			"babyPaymentThanks": "¡Puedes encontrar los detalles para realizar tu contribución abajo - bebecite se va de compras! 👶🛍️"
+		}
 	},
 	"donation": {
 		"title": "Fondo para bebecite",
 		"description": "Ya nos conoces, seguramente olvidamos comprar un millón de cosas. ¡Ayúdanos a mantenernos fuera de la cárcel contribuyendo a nuestro fondo para bebecite!",
 		"button": "Contribuir al fondo",
-		"amount": "Cantidad recaudada"
+		"amount": "Cantidad recaudada",
+		"bankTransfer": "Transferencia bancaria",
+		"accountHolder": "Titular de la cuenta",
+		"paypalDescription": "Para una contribución rápida y fácil, usa PayPal:",
+		"paypalButton": "Donar con PayPal"
+	},
+	"errors": {
+		"giftList": {
+			"reservationFailed": "Error al reservar",
+			"giftNotFound": "Regalo no encontrado",
+			"alreadyTaken": "El regalo ya está reservado"
+		}
 	}
 }
