@@ -1,4 +1,3 @@
-<!-- src/routes/admin/+layout.svelte -->
 <script lang="ts">
     import { goto } from '$app/navigation';
     import { page } from '$app/state';
@@ -28,6 +27,10 @@
             console.error('Logout error:', error);
         }
     }
+
+    function isActivePage(path: string): boolean {
+        return page.url.pathname === path;
+    }
 </script>
 
 <div class="admin-layout">
@@ -39,26 +42,39 @@
                     <span class="admin-user">Welcome, {data.session.userId}</span>
                 {/if}
             </div>
-            <nav>
-                <a href="/admin/gifts" class={page.url.pathname === '/admin/gifts' ? 'active' : ''}>
-                    Manage Gifts
+            <nav class="nav-links">
+                <a
+                  href="/admin/gifts"
+                  class="nav-link {isActivePage('/admin/gifts') ? 'active' : ''}"
+                  aria-current={isActivePage('/admin/gifts') ? 'page' : undefined}
+                >
+                    <span class="nav-icon">🎁</span>
+                    Regular Gifts
                 </a>
-                <button class="logout-button" onclick={handleLogout}>Logout</button>
+                <a
+                  href="/admin/big-gifts"
+                  class="nav-link {isActivePage('/admin/big-gifts') ? 'active' : ''}"
+                  aria-current={isActivePage('/admin/big-gifts') ? 'page' : undefined}
+                >
+                    <span class="nav-icon">🎯</span>
+                    Big Gifts
+                </a>
             </nav>
+            <button class="logout-btn" onclick={handleLogout} type="button">
+                Logout
+            </button>
         </header>
     {/if}
 
-    <main class="admin-content">
+    <main class="admin-main">
         {@render children()}
     </main>
 </div>
 
 <style>
     .admin-layout {
-        display: flex;
-        flex-direction: column;
         min-height: 100vh;
-        background-color: var(--color-gray-50);
+        background: var(--color-gray-50);
     }
 
     .admin-nav {
@@ -68,68 +84,119 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: var(--z-dropdown);
+        box-shadow: var(--shadow-sm);
     }
 
     .admin-logo h1 {
         font-size: var(--font-size-xl);
         color: var(--color-accent-light);
         margin: 0;
+        font-weight: var(--font-weight-bold);
     }
 
     .admin-user {
         font-size: var(--font-size-sm);
         color: var(--color-accent-light);
-        margin-left: var(--spacing-md);
     }
 
-    nav {
+    .nav-links {
         display: flex;
-        gap: var(--spacing-xl);
+        gap: var(--spacing-md);
         align-items: center;
     }
 
-    nav a {
-        color: var(--color-white);
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-sm) var(--spacing-md);
         text-decoration: none;
-        padding: var(--spacing-sm) 0;
-        position: relative;
-        transition: color var(--transition-fast);
-    }
-
-    nav a:hover {
-        color: var(--color-accent-light);
-    }
-
-    nav a.active {
         color: var(--color-white);
+        font-weight: var(--font-weight-medium);
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+        position: relative;
     }
 
-    nav a.active::after {
+    .nav-link:hover {
+        color: var(--color-primary);
+        background: var(--color-primary-light);
+    }
+
+    .nav-link.active {
+        color: var(--color-primary);
+        background: var(--color-primary-light);
+        font-weight: var(--font-weight-semibold);
+    }
+
+    .nav-link.active::after {
         content: '';
         position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
+        bottom: -1rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
         height: 2px;
-        background-color: var(--color-primary);
+        background: var(--color-primary);
     }
 
-    .logout-button {
-        background-color: transparent;
+    .nav-icon {
+        font-size: var(--font-size-lg);
+    }
+
+    .logout-btn {
+        background: var(--color-danger-dark);
         color: var(--color-white);
-        border: 1px solid var(--color-accent-light);
-        padding: var(--spacing-sm) var(--spacing-md);
+        border: none;
+        padding: var(--spacing-sm) var(--spacing-lg);
         border-radius: var(--radius-md);
+        font-weight: var(--font-weight-medium);
         cursor: pointer;
-        transition: all var(--transition-fast);
+        transition: background-color var(--transition-fast);
     }
 
-    .logout-button:hover {
-        background-color: var(--color-primary-dark);
-        color: var(--color-white);
+    .logout-btn:hover {
+        background: var(--color-danger-darkest);
     }
 
-    .admin-content {
+    .admin-main {
         flex: 1;
+    }
+
+    @media (max-width: 768px) {
+        .admin-nav {
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .nav-links {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .nav-link {
+            flex: 1;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .logout-btn {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .nav-links {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-link {
+            width: 100%;
+        }
     }
 </style>

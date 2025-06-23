@@ -92,6 +92,97 @@ export const bigGiftRepository = {
 		const [created] = await db.insert(bigGifts).values(bigGiftData).returning();
 		return transformBigGift(created, []);
 	},
+	async updateAdmin(
+		db: DatabaseInstance,
+		id: string,
+		updateData: Partial<{
+			name: string;
+			description: string;
+			imagePath: string;
+			targetAmount: number;
+			currency: string;
+			purchaseLinks: PurchaseLink[];
+		}>
+	): Promise<BigGiftWithContributors | null> {
+		try {
+			const dataToUpdate = {
+				...updateData,
+				updatedAt: new Date(),
+				// Serialize purchaseLinks if provided
+				...(updateData.purchaseLinks && {
+					purchaseLinks: JSON.stringify(updateData.purchaseLinks)
+				})
+			};
+
+			const [updated] = await db
+				.update(bigGifts)
+				.set(dataToUpdate)
+				.where(eq(bigGifts.id, id))
+				.returning();
+
+			if (!updated) return null;
+
+			// Get contributors for the updated big gift
+			const contributions = await db
+				.select()
+				.from(contributors)
+				.where(eq(contributors.bigGiftId, id));
+
+			return transformBigGift(updated, contributions);
+		} catch (error) {
+			console.error('Error updating big gift:', error);
+			throw new Error(
+				`Failed to update big gift: ${error instanceof Error ? error.message : 'Unknown error'}`
+			);
+		}
+	},
+
+	async delete(db: DatabaseInstance, id: string): Promise<void> {
+		try {
+			// Delete contributors first (should be handled by CASCADE, but being explicit)
+			await db.delete(contributors).where(eq(contributors.bigGiftId, id));
+
+			// Delete the big gift
+			await db.delete(bigGifts).where(eq(bigGifts.id, id));
+		} catch (error) {
+			console.error('Error deleting big gift:', error);
+			throw new Error(
+				`Failed to delete big gift: ${error instanceof Error ? error.message : 'Unknown error'}`
+			);
+		}
+	},
+
+	async findByIdAdmin(db: DatabaseInstance, id: string): Promise<BigGiftWithContributors | null> {
+		try {
+			const result = await db.select().from(bigGifts).where(eq(bigGifts.id, id));
+			if (!result[0]) return null;
+
+			const contributions = await db
+				.select()
+				.from(contributors)
+				.where(eq(contributors.bigGiftId, id));
+
+			// Return full data for admin (no privacy filtering)
+			return transformBigGift(result[0], contributions);
+		} catch (error) {
+			console.error('Error finding big gift by ID (admin):', error);
+			return null;
+		}
+	},
+
+	async findAllAdmin(db: DatabaseInstance): Promise<BigGiftWithContributors[]> {
+		try {
+			const result = await db.select().from(bigGifts).orderBy(asc(bigGifts.name));
+			const allContributions = await db.select().from(contributors);
+
+			return result.map((dbBigGift) => transformBigGift(dbBigGift, allContributions));
+		} catch (error) {
+			console.error('Error finding all big gifts (admin):', error);
+			throw new Error(
+				`Failed to fetch big gifts: ${error instanceof Error ? error.message : 'Unknown error'}`
+			);
+		}
+	},
 
 	async addContribution(
 		db: DatabaseInstance,
@@ -143,14 +234,12 @@ export const bigGiftRepository = {
 
 					return updatedDbResult.get();
 				});
-				console.log('Updated big gift:', updatedBigGift);
 
 				if (!updatedBigGift) return null;
 				const updatedContributions = await db
 					.select()
 					.from(contributors)
 					.where(eq(contributors.bigGiftId, contributionData.bigGiftId));
-				console.log('Updated contributions:', updatedContributions);
 
 				return transformBigGiftForPublic(transformBigGift(updatedBigGift, updatedContributions));
 			} catch (error) {
@@ -192,14 +281,12 @@ export const bigGiftRepository = {
 
 					return updated;
 				});
-				console.log('Updated big gift:', updatedBigGift);
 
 				if (!updatedBigGift) return null;
 				const updatedContributions = await db
 					.select()
 					.from(contributors)
 					.where(eq(contributors.bigGiftId, contributionData.bigGiftId));
-				console.log('Updated contributions:', updatedContributions);
 
 				return transformBigGiftForPublic(transformBigGift(updatedBigGift, updatedContributions));
 			} catch (error) {
