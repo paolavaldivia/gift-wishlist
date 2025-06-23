@@ -22,20 +22,37 @@
 	let filterMode = $state<'all' | 'available'>('all');
 	let lastFormResult = $state<string | null>(null);
 
-	let filteredGifts = $derived(
-		filterMode === 'all'
-			? gifts
-			: gifts.filter(gift => !gift.isTaken)
-	);
+	let interleavedItems = $derived(() => {
+		const items = [];
+		const maxLength = Math.max(gifts.length, bigGifts.length);
 
-	let filteredBigGifts = $derived(
+		for (let i = 0; i < maxLength; i++) {
+			if (i < gifts.length) items.push({ type: 'gift', item: gifts[i] });
+			if (i < bigGifts.length) items.push({ type: 'bigGift', item: bigGifts[i] });
+		}
+
+		return items;
+	});
+
+	let filteredInterleavedItems = $derived(
 		filterMode === 'all'
-			? bigGifts
-			: bigGifts.filter(gift => gift.targetAmount > gift.currentAmount)
+			? interleavedItems()
+			: interleavedItems().filter(item =>
+				(item.type === 'gift' && !(item.item as Gift).isTaken) ||
+				(item.type === 'bigGift' && (item.item as BigGift).targetAmount > (item.item as BigGift).currentAmount)
+			)
 	);
 
 	let availableGiftsCount = $derived(gifts.filter(gift => !gift.isTaken).length + bigGifts.filter(gift => gift.targetAmount > gift.currentAmount).length
 	);
+
+	function isBigGift(item: { type: string; item: Gift | BigGift }): item is { type: 'bigGift'; item: BigGift } {
+		return item.type === 'bigGift';
+	}
+
+	function isGift(item: { type: string; item: Gift | BigGift }): item is { type: 'gift'; item: Gift } {
+		return item.type === 'gift';
+	}
 
 	$effect(() => {
 		if (form && 'success' in form) {
@@ -155,17 +172,18 @@
 	</div>
 
 	<div class="gift-grid">
-		{#each filteredGifts as gift (gift.id)}
-			<GiftCard
-				{gift}
-				onReserve={openReserveModal}
-			/>
-		{/each}
-		{#each filteredBigGifts as bigGift (bigGift.id)}
-			<BigGiftCard
-				{bigGift}
-				onContribute={openContributeModal}
-			/>
+		{#each filteredInterleavedItems as item (item.type + '-' + item.item.id)}
+			{#if isGift(item)}
+				<GiftCard
+					gift={item.item}
+					onReserve={openReserveModal}
+				/>
+			{:else if isBigGift(item)}
+				<BigGiftCard
+					bigGift={item.item}
+					onContribute={openContributeModal}
+				/>
+			{/if}
 		{/each}
 	</div>
 </section>

@@ -21,9 +21,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 			giftRepository.findAll(locals.db),
 			bigGiftRepository.findAllWithContributors(locals.db)
 		]);
+
+		// Randomize the order of gifts and bigGifts
+		const shuffledGifts = [...gifts].sort(() => Math.random() - 0.5);
+		const shuffledBigGifts = [...bigGifts].sort(() => Math.random() - 0.5);
+
 		return {
-			gifts,
-			bigGifts
+			gifts: shuffledGifts,
+			bigGifts: shuffledBigGifts
 		};
 	} catch (err) {
 		console.error('Failed to load gifts:', err);
