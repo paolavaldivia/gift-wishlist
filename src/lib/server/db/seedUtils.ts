@@ -47,7 +47,11 @@ export async function seedDatabase(db: DatabaseInstance) {
 				currentAmount: f.int({ minValue: 0, maxValue: 130 })
 			}
 		},
-		contributors: {},
+		contributors: {
+			columns: {
+				amount: f.int({ minValue: 1, maxValue: 50 })
+			}
+		},
 		gifts: {
 			// currency valid only
 			columns: {

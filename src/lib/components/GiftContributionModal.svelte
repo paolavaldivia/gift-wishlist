@@ -132,14 +132,15 @@
 
 <Modal
 	show={isOpen && bigGift !== null}
-	title={isSuccess ? 'Thank You!' : `Contribute to ${bigGift?.name || ''}`}
+	title={isSuccess ? m['giftList.thankYou']({ name }) : m['giftList.contributionModal.title']({ name: bigGift?.name || '' })}
 	onClose={handleClose}
+	maxWidth="600px"
 >
 	{#if bigGift}
 		{#if isSuccess}
 			<!-- Success View -->
 			<div class="success-message">
-				<p>{m['giftList.babyThanks']()}</p>
+				<p>{m['giftList.contributionModal.babyPaymentThanks']()}</p>
 
 				<div class="success-content">
 					<!-- Gift image (left column) -->
@@ -149,11 +150,12 @@
 
 					<!-- Success message (right column) -->
 					<div class="success-details">
-						Thank you for contributing {formatPrice(parseFloat(amount), bigGift.currency)}
-						to {bigGift.name}. Every contribution brings us closer to making this gift possible!
+						{m['giftList.contributionModal.thankYouDetails']({ price: formatPrice(parseFloat(amount), bigGift.currency), name: bigGift.name })}
 					</div>
-					<PaymentOptions/>
 				</div>
+				<div class="payment-note">
+				<PaymentOptions/>
+					</div>
 				<button class="btn btn-primary close-btn" onclick={handleClose}>
 					{m['giftList.close']()}
 				</button>
@@ -439,10 +441,19 @@
         text-align: left;
     }
 
+
     .success-image {
         width: 120px;
         height: 120px;
         margin: 0;
+    }
+
+
+    .payment-note {
+				width: auto;
+        padding: var(--spacing-md);
+				border-top: 1px solid var(--color-gray-100);
+				margin: var(--spacing-lg) 0;
     }
 
     .close-btn {

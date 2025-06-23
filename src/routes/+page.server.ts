@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	try {
 		const [gifts, bigGifts] = await Promise.all([
 			giftRepository.findAll(locals.db),
-			bigGiftRepository.findAll(locals.db)
+			bigGiftRepository.findAllWithContributors(locals.db)
 		]);
 		return {
 			gifts,

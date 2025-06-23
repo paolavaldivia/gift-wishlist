@@ -7,6 +7,8 @@ import {
 } from './schema.js';
 import { asc, eq } from 'drizzle-orm';
 import type { PurchaseLink } from '$lib/types/gift';
+import type { DrizzleD1Database } from 'drizzle-orm/d1';
+import type * as schema from '$lib/server/db/schema';
 
 export interface Contributor {
 	id: string;
@@ -29,20 +31,39 @@ export interface BigGift {
 	purchaseLinks: PurchaseLink[];
 	createdAt: Date;
 	updatedAt: Date;
+}
+
+export interface BigGiftWithContributors extends BigGift {
 	contributors: Contributor[];
 }
+
 type DatabaseInstance = App.Locals['db'];
 
+function isDrizzleD1(db: DatabaseInstance): db is DrizzleD1Database<typeof schema> {
+	return 'D1' in db;
+}
+
 export const bigGiftRepository = {
-	async findAll(db: DatabaseInstance): Promise<BigGift[]> {
+	async findAll(db: DatabaseInstance): Promise<BigGiftWithContributors[]> {
+		const result = await db.select().from(bigGifts).orderBy(asc(bigGifts.name));
+		return result.map((dbBigGift) => transformBigGiftForPublic(transformBigGift(dbBigGift, [])));
+	},
+	async findAllWithContributors(db: DatabaseInstance): Promise<BigGiftWithContributors[]> {
 		const result = await db.select().from(bigGifts).orderBy(asc(bigGifts.name));
 		const contributions = await db.select().from(contributors);
 		return result.map((dbBigGift) =>
 			transformBigGiftForPublic(transformBigGift(dbBigGift, contributions))
 		);
 	},
-
-	async findById(db: DatabaseInstance, id: string): Promise<BigGift | null> {
+	async findById(db: DatabaseInstance, id: string): Promise<BigGiftWithContributors | null> {
+		const result = await db.select().from(bigGifts).where(eq(bigGifts.id, id));
+		if (!result[0]) return null;
+		return transformBigGiftForPublic(transformBigGift(result[0], []));
+	},
+	async findByIdWithContributors(
+		db: DatabaseInstance,
+		id: string
+	): Promise<BigGiftWithContributors | null> {
 		const result = await db.select().from(bigGifts).where(eq(bigGifts.id, id));
 		const contributions = await db
 			.select()
@@ -51,14 +72,13 @@ export const bigGiftRepository = {
 		if (!result[0]) return null;
 		return transformBigGiftForPublic(transformBigGift(result[0], contributions));
 	},
-
 	async createAdmin(
 		db: DatabaseInstance,
 		newBigGiftData: Omit<
 			NewBigGift,
 			'id' | 'createdAt' | 'updatedAt' | 'currentAmount' | 'isTaken' | 'takenBy'
 		>
-	): Promise<BigGift> {
+	): Promise<BigGiftWithContributors> {
 		const bigGiftData = {
 			id: generateId(),
 			...newBigGiftData,
@@ -84,50 +104,111 @@ export const bigGiftRepository = {
 			hideContributorName?: boolean;
 			createdAt: Date;
 		}
-	): Promise<BigGift | null> {
-		let updatedBigGift: DbBigGift | null = null;
-		let updatedContributions: DbContributor[] = [];
+	) {
+		const isD1 = isDrizzleD1(db);
 
-		// Start a transaction to ensure both operations succeed or fail together
-		await db.transaction(async (tx) => {
-			// Insert the contribution record
-			await tx.insert(contributors).values({
-				id: generateId(),
-				...contributionData,
-				hideContributorName: contributionData.hideContributorName || false
-			});
+		if (!isD1) {
+			// BetterSQLite3 transactions must be synchronous
+			try {
+				const updatedBigGift = db.transaction((tx) => {
+					// Insert the contribution record
+					tx.insert(contributors)
+						.values({
+							id: generateId(),
+							...contributionData,
+							hideContributorName: contributionData.hideContributorName || false
+						})
+						.run();
 
-			// First get the current amount
-			const [currentBigGift] = await tx
-				.select()
-				.from(bigGifts)
-				.where(eq(bigGifts.id, contributionData.bigGiftId));
+					// Get the current big gift
+					const currentBigGiftDbResult = tx
+						.select()
+						.from(bigGifts)
+						.where(eq(bigGifts.id, contributionData.bigGiftId));
+					const currentBigGift = currentBigGiftDbResult.get();
 
-			if (!currentBigGift) return;
+					if (!currentBigGift) {
+						throw new Error(`Big gift with id ${contributionData.bigGiftId} not found`);
+					}
 
-			// Update the big gift's current amount
-			const [updated] = await tx
-				.update(bigGifts)
-				.set({
-					currentAmount: currentBigGift.currentAmount + contributionData.amount,
-					updatedAt: new Date()
-				})
-				.where(eq(bigGifts.id, contributionData.bigGiftId))
-				.returning();
+					// Update the big gift's current amount
+					const updatedDbResult = tx
+						.update(bigGifts)
+						.set({
+							currentAmount: currentBigGift.currentAmount + contributionData.amount,
+							updatedAt: new Date()
+						})
+						.where(eq(bigGifts.id, contributionData.bigGiftId))
+						.returning();
 
-			if (updated) {
-				updatedBigGift = updated;
-				updatedContributions = await tx.select().from(contributors);
+					return updatedDbResult.get();
+				});
+				console.log('Updated big gift:', updatedBigGift);
+
+				if (!updatedBigGift) return null;
+				const updatedContributions = await db
+					.select()
+					.from(contributors)
+					.where(eq(contributors.bigGiftId, contributionData.bigGiftId));
+				console.log('Updated contributions:', updatedContributions);
+
+				return transformBigGiftForPublic(transformBigGift(updatedBigGift, updatedContributions));
+			} catch (error) {
+				console.error('Error adding contribution:', error);
+				throw new Error(
+					`Failed to add contribution: ${error instanceof Error ? error.message : 'Unknown error'}`
+				);
 			}
-		});
+		} else {
+			// D1 transactions are async
+			try {
+				const updatedBigGift = await db.transaction(async (tx) => {
+					// Insert the contribution record
+					await tx.insert(contributors).values({
+						id: generateId(),
+						...contributionData,
+						hideContributorName: contributionData.hideContributorName || false
+					});
 
-		// Return the transformed big gift if we got an update
-		return updatedBigGift
-			? transformBigGiftForPublic(transformBigGift(updatedBigGift, updatedContributions))
-			: null;
-	},
-	async delete(db: DatabaseInstance, id: string): Promise<void> {
-		await db.delete(bigGifts).where(eq(bigGifts.id, id));
+					// Get the current big gift
+					const [currentBigGift] = await tx
+						.select()
+						.from(bigGifts)
+						.where(eq(bigGifts.id, contributionData.bigGiftId));
+
+					if (!currentBigGift) {
+						throw new Error(`Big gift with id ${contributionData.bigGiftId} not found`);
+					}
+
+					// Update the big gift's current amount
+					const [updated] = await tx
+						.update(bigGifts)
+						.set({
+							currentAmount: currentBigGift.currentAmount + contributionData.amount,
+							updatedAt: new Date()
+						})
+						.where(eq(bigGifts.id, contributionData.bigGiftId))
+						.returning();
+
+					return updated;
+				});
+				console.log('Updated big gift:', updatedBigGift);
+
+				if (!updatedBigGift) return null;
+				const updatedContributions = await db
+					.select()
+					.from(contributors)
+					.where(eq(contributors.bigGiftId, contributionData.bigGiftId));
+				console.log('Updated contributions:', updatedContributions);
+
+				return transformBigGiftForPublic(transformBigGift(updatedBigGift, updatedContributions));
+			} catch (error) {
+				console.error('Error adding contribution:', error);
+				throw new Error(
+					`Failed to add contribution: ${error instanceof Error ? error.message : 'Unknown error'}`
+				);
+			}
+		}
 	}
 };
 
@@ -135,19 +216,17 @@ function generateId(): string {
 	return crypto.randomUUID();
 }
 
-function transformBigGiftForPublic(bigGift: BigGift): BigGift {
+function transformBigGiftForPublic(bigGift: BigGiftWithContributors): BigGiftWithContributors {
 	return {
 		...bigGift,
-		contributors: bigGift.contributors.map((c) => ({
-			...c,
-			name: c.hideContributorName ? 'Anonymous' : c.name,
-			email: undefined,
-			message: undefined
-		}))
+		contributors: bigGift.contributors.map(transformPublicContributor)
 	};
 }
 
-function transformBigGift(dbBigGift: DbBigGift, contributions: DbContributor[]): BigGift {
+function transformBigGift(
+	dbBigGift: DbBigGift,
+	contributions: DbContributor[]
+): BigGiftWithContributors {
 	let purchaseLinks: PurchaseLink[] = [];
 
 	try {
@@ -163,15 +242,7 @@ function transformBigGift(dbBigGift: DbBigGift, contributions: DbContributor[]):
 
 	const contributors = contributions
 		.filter((c) => c.bigGiftId === dbBigGift.id)
-		.map((c) => ({
-			id: c.id,
-			name: c.name,
-			amount: c.amount,
-			email: c.email,
-			message: c.message,
-			hideContributorName: Boolean(c.hideContributorName),
-			createdAt: c.createdAt
-		}));
+		.map(transformContributor);
 
 	return {
 		id: dbBigGift.id,
@@ -185,5 +256,26 @@ function transformBigGift(dbBigGift: DbBigGift, contributions: DbContributor[]):
 		createdAt: dbBigGift.createdAt,
 		updatedAt: dbBigGift.updatedAt,
 		contributors
+	};
+}
+
+function transformContributor(dbContributor: any): Contributor {
+	return {
+		id: dbContributor.id,
+		name: dbContributor.name,
+		amount: Number(dbContributor.amount?.toFixed?.(2) ?? dbContributor.amount),
+		email: dbContributor.email,
+		message: dbContributor.message,
+		hideContributorName: Boolean(dbContributor.hideContributorName),
+		createdAt: dbContributor.createdAt
+	};
+}
+
+function transformPublicContributor(contributor: Contributor): Contributor {
+	return {
+		...contributor,
+		name: contributor.hideContributorName ? 'Anonymous' : contributor.name,
+		email: undefined,
+		message: undefined
 	};
 }

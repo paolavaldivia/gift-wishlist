@@ -49,7 +49,9 @@
       "contribute": "Contribute",
       "processing": "Processing...",
       "thankYou": "Thank you!",
-      "close": "Close"
+      "close": "Close",
+      "thankYouDetails": "Thank you for contributing {price} to {name}! Every contribution brings us closer to making this gift possible!",
+      "babyPaymentThanks": "You can find the contribution details below - our tiny tenant's shopping spree depends on it! 👶🛍️"
     }
   },
   "donation": {
