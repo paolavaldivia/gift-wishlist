@@ -461,8 +461,4 @@
         margin-top: var(--spacing-lg);
     }
 
-    .success-price {
-        margin-bottom: var(--spacing-md);
-    }
-
 </style>

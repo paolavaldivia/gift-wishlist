@@ -149,6 +149,13 @@ export const actions = {
 				});
 			}
 
+			// Make sure we're returning the most up-to-date data
+			// Fetch all big gifts again to ensure the page data is refreshed
+			const [gifts, bigGifts] = await Promise.all([
+				giftRepository.findAll(locals.db),
+				bigGiftRepository.findAllWithContributors(locals.db)
+			]);
+
 			return {
 				success: true,
 				bigGift: updatedBigGift,
@@ -156,7 +163,12 @@ export const actions = {
 				amount,
 				email,
 				message,
-				hideContributorName
+				hideContributorName,
+				// Include updated data for the page
+				data: {
+					gifts,
+					bigGifts
+				}
 			};
 		} catch (err) {
 			console.error('Failed to add contribution:', err);

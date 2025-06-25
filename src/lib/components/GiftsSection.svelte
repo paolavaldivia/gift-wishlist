@@ -66,7 +66,13 @@
 					gifts = gifts.map(g =>
 						g.id === form.gift.id ? { ...g, ...form.gift } : g
 					);
-				} else if (!form.success) {
+				} if (form.success && form.bigGift) {
+					// Update bigGifts array with the new data
+					bigGifts = bigGifts.map(g =>
+						g.id === form.bigGift.id ? { ...g, ...form.bigGift } : g
+					);
+				}
+				else if (!form.success) {
 					showErrorNotification(form.message || 'Unknown error');
 					closeReserveModal();
 				}
