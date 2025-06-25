@@ -5,9 +5,10 @@ import {
 	contributors,
 	type NewBigGift
 } from './schema.js';
-import { asc, eq } from 'drizzle-orm';
+import { asc, eq, is } from 'drizzle-orm';
 import type { PurchaseLink } from '$lib/types/gift';
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
+import { DrizzleD1Database as DrizzleD1DatabaseClass } from 'drizzle-orm/d1';
 import type * as schema from '$lib/server/db/schema';
 
 export interface Contributor {
@@ -40,7 +41,7 @@ export interface BigGiftWithContributors extends BigGift {
 type DatabaseInstance = App.Locals['db'];
 
 function isDrizzleD1(db: DatabaseInstance): db is DrizzleD1Database<typeof schema> {
-	return 'D1' in db;
+	return is(db, DrizzleD1DatabaseClass);
 }
 
 export const bigGiftRepository = {
@@ -249,40 +250,46 @@ export const bigGiftRepository = {
 				);
 			}
 		} else {
-			// D1 transactions are async
+			// D1 implementation using batch API
 			try {
-				const updatedBigGift = await db.transaction(async (tx) => {
-					// Insert the contribution record
-					await tx.insert(contributors).values({
-						id: generateId(),
+				// First, get the current big gift to calculate the new amount
+				const [currentBigGift] = await db
+					.select()
+					.from(bigGifts)
+					.where(eq(bigGifts.id, contributionData.bigGiftId));
+
+				if (!currentBigGift) {
+					throw new Error(`Big gift with id ${contributionData.bigGiftId} not found`);
+				}
+
+				// Prepare the new contribution
+				const contributorId = generateId();
+
+				// Execute both operations in a batch for atomicity
+				await db.batch([
+					db.insert(contributors).values({
+						id: contributorId,
 						...contributionData,
 						hideContributorName: contributionData.hideContributorName || false
-					});
-
-					// Get the current big gift
-					const [currentBigGift] = await tx
-						.select()
-						.from(bigGifts)
-						.where(eq(bigGifts.id, contributionData.bigGiftId));
-
-					if (!currentBigGift) {
-						throw new Error(`Big gift with id ${contributionData.bigGiftId} not found`);
-					}
-
-					// Update the big gift's current amount
-					const [updated] = await tx
+					}),
+					db
 						.update(bigGifts)
 						.set({
 							currentAmount: currentBigGift.currentAmount + contributionData.amount,
 							updatedAt: new Date()
 						})
 						.where(eq(bigGifts.id, contributionData.bigGiftId))
-						.returning();
+				]);
 
-					return updated;
-				});
+				// Get the updated big gift
+				const [updatedBigGift] = await db
+					.select()
+					.from(bigGifts)
+					.where(eq(bigGifts.id, contributionData.bigGiftId));
 
 				if (!updatedBigGift) return null;
+
+				// Get updated contributions
 				const updatedContributions = await db
 					.select()
 					.from(contributors)
