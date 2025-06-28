@@ -61,8 +61,6 @@ export const bigGiftRepository = {
 		return result.map((dbBigGift) => {
 			const giftContributions = allContributions.filter((c) => c.bigGiftId === dbBigGift.id);
 			const currentAmount = giftContributions.reduce((sum, c) => sum + Number(c.amount), 0);
-			console.log('currentAmount', currentAmount);
-			console.log(dbBigGift);
 			return transformBigGiftForPublic(
 				transformBigGift(dbBigGift, allContributions, currentAmount)
 			);
