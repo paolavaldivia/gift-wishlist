@@ -36,6 +36,8 @@
     "targetAmount": "Target amount",
     "contribute": "Contribute to this gift",
     "contributeButton": "Contribute",
+    "raised": "Raised",
+    "remaining": "Remaining",
     "contributionModal": {
       "title": "Contribute to {name}",
       "amount": "Amount",

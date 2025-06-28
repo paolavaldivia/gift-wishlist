@@ -1,6 +1,7 @@
 <script lang="ts">
 
 	import { formatPrice } from '$lib/util/format';
+	import * as m from '$lib/paraglide/messages';
 
 	let { targetAmount, currentAmount, currency }: {
 		targetAmount: number;
@@ -22,11 +23,11 @@
 
 <div class="progress-info">
 	<div class="current-amount">
-		<span class="label">raised</span>
+		<span class="label">{m['giftList.raised']()}</span>
 		<span class="amount">{formatPrice(currentAmount, currency)}</span>
 	</div>
 	<div class="remaining-amount">
-		<span class="label">remaining</span>
+		<span class="label">{m['giftList.remaining']()}</span>
 		<span class="amount">{formatPrice(getRemainingAmount(), currency)}</span>
 	</div>
 </div>

@@ -32,6 +32,8 @@
 		"targetAmount": "Monto objetivo",
 		"contribute": "Contribuir a este regalo",
 		"contributeButton": "Contribuir",
+		"raised": "Recaudado",
+		"remaining": "Restante",
 		"contributionModal": {
 			"title": "Contribuir a {name}",
 			"amount": "Cantidad",
