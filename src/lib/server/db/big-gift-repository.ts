@@ -5,11 +5,8 @@ import {
 	contributors,
 	type NewBigGift
 } from './schema.js';
-import { asc, eq, is } from 'drizzle-orm';
+import { asc, eq, sum } from 'drizzle-orm';
 import type { PurchaseLink } from '$lib/types/gift';
-import type { DrizzleD1Database } from 'drizzle-orm/d1';
-import { DrizzleD1Database as DrizzleD1DatabaseClass } from 'drizzle-orm/d1';
-import type * as schema from '$lib/server/db/schema';
 
 export interface Contributor {
 	id: string;
@@ -40,38 +37,55 @@ export interface BigGiftWithContributors extends BigGift {
 
 type DatabaseInstance = App.Locals['db'];
 
-function isDrizzleD1(db: DatabaseInstance): db is DrizzleD1Database<typeof schema> {
-	return is(db, DrizzleD1DatabaseClass);
-}
-
 export const bigGiftRepository = {
 	async findAll(db: DatabaseInstance): Promise<BigGiftWithContributors[]> {
-		const result = await db.select().from(bigGifts).orderBy(asc(bigGifts.name));
+		const bigGiftsResult = await db.select().from(bigGifts).orderBy(asc(bigGifts.name));
+		const contributions = await db
+			.select({ bigGiftId: contributors.bigGiftId, total: sum(contributors.amount) })
+			.from(contributors)
+			.groupBy(contributors.bigGiftId);
+
+		const result = bigGiftsResult.map((dbBigGift) => {
+			const total = contributions.find((c) => c.bigGiftId === dbBigGift.id)?.total ?? 0;
+			return {
+				...dbBigGift,
+				currentAmount: total
+			};
+		});
+
 		return result.map((dbBigGift) => transformBigGiftForPublic(transformBigGift(dbBigGift, [])));
 	},
 	async findAllWithContributors(db: DatabaseInstance): Promise<BigGiftWithContributors[]> {
 		const result = await db.select().from(bigGifts).orderBy(asc(bigGifts.name));
-		const contributions = await db.select().from(contributors);
-		return result.map((dbBigGift) =>
-			transformBigGiftForPublic(transformBigGift(dbBigGift, contributions))
-		);
+		const allContributions = await db.select().from(contributors);
+		return result.map((dbBigGift) => {
+			const giftContributions = allContributions.filter((c) => c.bigGiftId === dbBigGift.id);
+			const currentAmount = giftContributions.reduce((sum, c) => sum + Number(c.amount), 0);
+			console.log('currentAmount', currentAmount);
+			console.log(dbBigGift);
+			return transformBigGiftForPublic(
+				transformBigGift(dbBigGift, allContributions, currentAmount)
+			);
+		});
 	},
 	async findById(db: DatabaseInstance, id: string): Promise<BigGiftWithContributors | null> {
 		const result = await db.select().from(bigGifts).where(eq(bigGifts.id, id));
 		if (!result[0]) return null;
-		return transformBigGiftForPublic(transformBigGift(result[0], []));
+		return transformBigGiftForPublic(transformBigGift(result[0], [], 0));
 	},
 	async findByIdWithContributors(
 		db: DatabaseInstance,
 		id: string
 	): Promise<BigGiftWithContributors | null> {
 		const result = await db.select().from(bigGifts).where(eq(bigGifts.id, id));
+
+		if (!result[0]) return null;
 		const contributions = await db
 			.select()
 			.from(contributors)
 			.where(eq(contributors.bigGiftId, id));
-		if (!result[0]) return null;
-		return transformBigGiftForPublic(transformBigGift(result[0], contributions));
+		const total = contributions.reduce((sum, c) => sum + c.amount, 0);
+		return transformBigGiftForPublic(transformBigGift(result[0], contributions, total));
 	},
 	async createAdmin(
 		db: DatabaseInstance,
@@ -91,7 +105,7 @@ export const bigGiftRepository = {
 		};
 
 		const [created] = await db.insert(bigGifts).values(bigGiftData).returning();
-		return transformBigGift(created, []);
+		return transformBigGift(created, [], 0);
 	},
 	async updateAdmin(
 		db: DatabaseInstance,
@@ -128,8 +142,9 @@ export const bigGiftRepository = {
 				.select()
 				.from(contributors)
 				.where(eq(contributors.bigGiftId, id));
+			const total = contributions.reduce((sum, c) => sum + c.amount, 0);
 
-			return transformBigGift(updated, contributions);
+			return transformBigGift(updated, contributions, total);
 		} catch (error) {
 			console.error('Error updating big gift:', error);
 			throw new Error(
@@ -162,9 +177,10 @@ export const bigGiftRepository = {
 				.select()
 				.from(contributors)
 				.where(eq(contributors.bigGiftId, id));
+			const total = contributions.reduce((sum, c) => sum + c.amount, 0);
 
 			// Return full data for admin (no privacy filtering)
-			return transformBigGift(result[0], contributions);
+			return transformBigGift(result[0], contributions, total);
 		} catch (error) {
 			console.error('Error finding big gift by ID (admin):', error);
 			return null;
@@ -176,7 +192,11 @@ export const bigGiftRepository = {
 			const result = await db.select().from(bigGifts).orderBy(asc(bigGifts.name));
 			const allContributions = await db.select().from(contributors);
 
-			return result.map((dbBigGift) => transformBigGift(dbBigGift, allContributions));
+			return result.map((dbBigGift) => {
+				const contributions = allContributions.filter((c) => c.bigGiftId === dbBigGift.id);
+				const total = contributions.reduce((sum, c) => sum + c.amount, 0);
+				return transformBigGift(dbBigGift, allContributions, total);
+			});
 		} catch (error) {
 			console.error('Error finding all big gifts (admin):', error);
 			throw new Error(
@@ -185,6 +205,9 @@ export const bigGiftRepository = {
 		}
 	},
 
+	/**
+	 * Add a contribution to a big gift
+	 */
 	async addContribution(
 		db: DatabaseInstance,
 		contributionData: {
@@ -196,112 +219,42 @@ export const bigGiftRepository = {
 			hideContributorName?: boolean;
 			createdAt: Date;
 		}
-	) {
-		const isD1 = isDrizzleD1(db);
+	): Promise<BigGiftWithContributors | null> {
+		try {
+			// Verify the big gift exists
+			const [bigGift] = await db
+				.select()
+				.from(bigGifts)
+				.where(eq(bigGifts.id, contributionData.bigGiftId));
 
-		if (!isD1) {
-			// BetterSQLite3 transactions must be synchronous
-			try {
-				const updatedBigGift = db.transaction((tx) => {
-					// Insert the contribution record
-					tx.insert(contributors)
-						.values({
-							id: generateId(),
-							...contributionData,
-							hideContributorName: contributionData.hideContributorName || false
-						})
-						.run();
-
-					// Get the current big gift
-					const currentBigGiftDbResult = tx
-						.select()
-						.from(bigGifts)
-						.where(eq(bigGifts.id, contributionData.bigGiftId));
-					const currentBigGift = currentBigGiftDbResult.get();
-
-					if (!currentBigGift) {
-						throw new Error(`Big gift with id ${contributionData.bigGiftId} not found`);
-					}
-
-					// Update the big gift's current amount
-					const updatedDbResult = tx
-						.update(bigGifts)
-						.set({
-							currentAmount: currentBigGift.currentAmount + contributionData.amount,
-							updatedAt: new Date()
-						})
-						.where(eq(bigGifts.id, contributionData.bigGiftId))
-						.returning();
-
-					return updatedDbResult.get();
-				});
-
-				if (!updatedBigGift) return null;
-				const updatedContributions = await db
-					.select()
-					.from(contributors)
-					.where(eq(contributors.bigGiftId, contributionData.bigGiftId));
-
-				return transformBigGiftForPublic(transformBigGift(updatedBigGift, updatedContributions));
-			} catch (error) {
-				console.error('Error adding contribution:', error);
-				throw new Error(
-					`Failed to add contribution: ${error instanceof Error ? error.message : 'Unknown error'}`
-				);
+			if (!bigGift) {
+				throw new Error(`Big gift with id ${contributionData.bigGiftId} not found`);
 			}
-		} else {
-			// D1 implementation using batch API
-			try {
-				// First, get the current big gift to calculate the new amount
-				const [currentBigGift] = await db
-					.select()
-					.from(bigGifts)
-					.where(eq(bigGifts.id, contributionData.bigGiftId));
 
-				if (!currentBigGift) {
-					throw new Error(`Big gift with id ${contributionData.bigGiftId} not found`);
-				}
+			// Insert the contribution - this is now the only database operation needed!
+			const contributorId = generateId();
+			await db.insert(contributors).values({
+				id: contributorId,
+				...contributionData,
+				hideContributorName: contributionData.hideContributorName || false
+			});
 
-				// Prepare the new contribution
-				const contributorId = generateId();
+			// Get all contributions for this big gift to calculate the new total
+			const updatedContributions = await db
+				.select()
+				.from(contributors)
+				.where(eq(contributors.bigGiftId, contributionData.bigGiftId));
 
-				// Execute both operations in a batch for atomicity
-				await db.batch([
-					db.insert(contributors).values({
-						id: contributorId,
-						...contributionData,
-						hideContributorName: contributionData.hideContributorName || false
-					}),
-					db
-						.update(bigGifts)
-						.set({
-							currentAmount: currentBigGift.currentAmount + contributionData.amount,
-							updatedAt: new Date()
-						})
-						.where(eq(bigGifts.id, contributionData.bigGiftId))
-				]);
+			const currentAmount = updatedContributions.reduce((sum, c) => sum + Number(c.amount), 0);
 
-				// Get the updated big gift
-				const [updatedBigGift] = await db
-					.select()
-					.from(bigGifts)
-					.where(eq(bigGifts.id, contributionData.bigGiftId));
-
-				if (!updatedBigGift) return null;
-
-				// Get updated contributions
-				const updatedContributions = await db
-					.select()
-					.from(contributors)
-					.where(eq(contributors.bigGiftId, contributionData.bigGiftId));
-
-				return transformBigGiftForPublic(transformBigGift(updatedBigGift, updatedContributions));
-			} catch (error) {
-				console.error('Error adding contribution:', error);
-				throw new Error(
-					`Failed to add contribution: ${error instanceof Error ? error.message : 'Unknown error'}`
-				);
-			}
+			return transformBigGiftForPublic(
+				transformBigGift(bigGift, updatedContributions, currentAmount)
+			);
+		} catch (error) {
+			console.error('Error adding contribution:', error);
+			throw new Error(
+				`Failed to add contribution: ${error instanceof Error ? error.message : 'Unknown error'}`
+			);
 		}
 	}
 };
@@ -319,7 +272,8 @@ function transformBigGiftForPublic(bigGift: BigGiftWithContributors): BigGiftWit
 
 function transformBigGift(
 	dbBigGift: DbBigGift,
-	contributions: DbContributor[]
+	contributions: DbContributor[],
+	totalContributed?: number
 ): BigGiftWithContributors {
 	let purchaseLinks: PurchaseLink[] = [];
 
@@ -344,7 +298,7 @@ function transformBigGift(
 		description: dbBigGift.description,
 		imagePath: dbBigGift.imagePath,
 		targetAmount: Number(dbBigGift.targetAmount?.toFixed?.(2) ?? dbBigGift.targetAmount),
-		currentAmount: Number(dbBigGift.currentAmount?.toFixed?.(2) ?? dbBigGift.currentAmount),
+		currentAmount: Number(totalContributed?.toFixed?.(2)),
 		currency: dbBigGift.currency,
 		purchaseLinks,
 		createdAt: dbBigGift.createdAt,

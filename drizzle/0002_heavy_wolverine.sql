@@ -1,0 +1,1 @@
+ALTER TABLE `big_gifts` DROP COLUMN `current_amount`;

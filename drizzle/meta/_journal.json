@@ -15,6 +15,13 @@
       "when": 1750110859162,
       "tag": "0001_absurd_wither",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1751108750927,
+      "tag": "0002_heavy_wolverine",
+      "breakpoints": true
     }
   ]
 }

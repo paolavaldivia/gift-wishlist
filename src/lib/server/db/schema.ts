@@ -36,7 +36,6 @@ export const bigGifts = sqliteTable('big_gifts', {
 	description: text('description').notNull(),
 	imagePath: text('image_path').notNull(),
 	targetAmount: real('target_amount').notNull(),
-	currentAmount: real('current_amount').notNull().default(0),
 	currency: text('currency').$type<Currency>().notNull().default('EUR'),
 	purchaseLinks: text('purchase_links', { mode: 'json' })
 		.$type<Array<{ siteName: string; url: string }>>()
@@ -53,7 +52,7 @@ export const bigGifts = sqliteTable('big_gifts', {
 		.$onUpdate(() => new Date())
 });
 
-// Contributors table for big gifts
+// Contributors table for big gifts - unchanged
 export const contributors = sqliteTable('contributors', {
 	id: text('id').primaryKey(),
 	bigGiftId: text('big_gift_id')
