@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
 			project: './project.inlang',
 			outdir: './src/lib/paraglide',
 			disableAsyncLocalStorage: true,
-			strategy: ['url', 'preferredLanguage', 'cookie', 'baseLocale']
+			strategy: ['preferredLanguage', 'url', 'cookie', 'baseLocale']
 		})
 	],
 	test: {

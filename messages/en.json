@@ -56,7 +56,7 @@
   },
   "donation": {
     "title": "Baby Fund",
-    "description": "You know us, surely we forgot to buy a million things. Help us stay out of jail by contributing to our baby fund!",
+    "description": "You know us, surely we forgot to buy a million things. Help us by contributing to our baby fund!",
     "button": "Contribute to the fund",
     "amount": "Amount collected",
     "bankTransfer": "Bank Transfer",
